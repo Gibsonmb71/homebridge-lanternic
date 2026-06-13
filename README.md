@@ -2,7 +2,7 @@
 
 Homebridge plugin for BLE RGBIC/RGBWIC light strips controlled by the Magic Lantern app.
 
-The goal is a reliable local-only bridge for the common unbranded Magic Lantern strips and lamps. These devices are usually BLE lights, not Magic Home Wi-Fi devices, so this plugin talks directly to the BLE service used by the Magic Lantern app.
+The goal is a reliable local-only bridge for the common unbranded Magic Lantern strips.
 
 ## Status
 
