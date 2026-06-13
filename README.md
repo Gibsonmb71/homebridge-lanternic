@@ -20,7 +20,7 @@ Effects and segment control are not supported as there is no good way to expose 
 
 ## Install
 
-Once published to npm, install it like any other Homebridge plugin:
+Install it like any other Homebridge plugin:
 
 ```sh
 sudo npm install -g homebridge-lanternic
@@ -211,7 +211,7 @@ The core frames available here are:
 - Effect speed: `7e0402xxffffff00ef`, where `xx` is 0-100 decimal encoded as one byte
 - Basic effect: `7e0503xx06ffff00ef`
 
-> Protocol credit: these Magic Lantern BLE frame notes are based on packet-captures from [@kassabov](https://github.com/kassabov) in Home Assistant Core issue [#145934](https://github.com/home-assistant/core/issues/145934). (thanks!)
+> These Magic Lantern BLE frame notes are based on packet-captures from [@kassabov](https://github.com/kassabov) in Home Assistant Core issue [#145934](https://github.com/home-assistant/core/issues/145934). (thanks!)
 
 - Home Assistant Core issue: <https://github.com/home-assistant/core/issues/145934>
 - Home Assistant community thread: <https://community.home-assistant.io/t/new-integration-for-ble-magic-lantern/454055>
