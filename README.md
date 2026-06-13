@@ -1,5 +1,12 @@
 # Homebridge LanternIC
 
+[![npm version](https://img.shields.io/npm/v/homebridge-lanternic.svg)](https://www.npmjs.com/package/homebridge-lanternic)
+[![npm downloads](https://img.shields.io/npm/dm/homebridge-lanternic.svg)](https://www.npmjs.com/package/homebridge-lanternic)
+[![CI](https://github.com/Gibsonmb71/homebridge-lanternic/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Gibsonmb71/homebridge-lanternic/actions/workflows/ci.yml)
+[![Node.js](https://img.shields.io/node/v/homebridge-lanternic.svg)](https://www.npmjs.com/package/homebridge-lanternic)
+[![Homebridge](https://img.shields.io/badge/homebridge-1.8%20%7C%202.x-blue.svg)](https://homebridge.io/)
+[![License](https://img.shields.io/npm/l/homebridge-lanternic.svg)](LICENSE)
+
 Homebridge plugin for BLE RGBIC/RGBWIC light strips controlled by the Magic Lantern app.
 
 ## Status
