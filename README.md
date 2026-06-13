@@ -40,6 +40,14 @@ npm install
 npm run build
 sudo hb-service link
 ```
+> [!CAUTION]
+>
+> Only the following platforms are supported:
+>
+> - **macOS**
+>   - If using macOS, you'll need to give Node.js permission to use Bluetooth in **System Settings → Privacy & Security → Bluetooth**.
+> - **Linux**
+>   - 64-bit, not tested on 32-bit systems
 
 ## Homebridge UI Setup
 
