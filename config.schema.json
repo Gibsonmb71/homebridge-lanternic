@@ -15,12 +15,38 @@
         "type": "string",
         "default": "LanternIC"
       },
+      "setupMode": {
+        "title": "Setup Mode",
+        "type": "string",
+        "default": "auto",
+        "description": "Choose Auto Mode for first setup unless you already know your strip's Bluetooth address.",
+        "oneOf": [
+          {
+            "title": "Auto Mode",
+            "enum": [
+              "auto"
+            ]
+          },
+          {
+            "title": "Manual Mode",
+            "enum": [
+              "manual"
+            ]
+          }
+        ],
+        "condition": {
+          "functionBody": "return !model.devices || model.devices.length === 0;"
+        }
+      },
       "devices": {
         "title": "Light Strips",
         "type": "array",
         "buttonText": "Add Light Strip",
         "default": [],
         "description": "Use discovery logs or lanternic-scan to find Magic Lantern BLE device ids. On Linux this is usually the MAC address; on macOS it may be a long CoreBluetooth id.",
+        "condition": {
+          "functionBody": "return (model.devices && model.devices.length > 0) || model.setupMode === 'manual';"
+        },
         "items": {
           "type": "object",
           "required": [
@@ -144,6 +170,89 @@
                   ]
                 }
               ]
+            },
+            "effects": {
+              "title": "Effects",
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Optional HomeKit switch services for Magic Lantern animation effects.",
+              "properties": {
+                "enabled": {
+                  "title": "Expose Effect Switches",
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Add HomeKit switches for Magic Lantern effects on this strip. Turning an effect switch off restores the normal light color by default."
+                },
+                "defaultSpeed": {
+                  "title": "Default Effect Speed",
+                  "type": "integer",
+                  "default": 39,
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Speed frame value sent before effect frames. 0 is slowest, 100 is fastest."
+                },
+                "restoreColorOnDisable": {
+                  "title": "Restore Color When Effect Turns Off",
+                  "type": "boolean",
+                  "default": true,
+                  "description": "When an active effect switch is turned off, send the saved HomeKit color and brightness back to the strip."
+                },
+                "items": {
+                  "title": "Effect Switches",
+                  "type": "array",
+                  "buttonText": "Add Effect",
+                  "default": [
+                    {
+                      "name": "AutoPlay",
+                      "code": 0
+                    },
+                    {
+                      "name": "Magic Back",
+                      "code": 1
+                    },
+                    {
+                      "name": "Yellow Marquee",
+                      "code": 207
+                    }
+                  ],
+                  "description": "Effect codes are the xx byte in 7e0503xx06ffff00ef. Codes may be decimal, so Yellow Marquee is 207 for hex CF.",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "code"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "title": "Name",
+                        "type": "string",
+                        "default": "Effect"
+                      },
+                      "code": {
+                        "title": "Effect Code",
+                        "type": "integer",
+                        "default": 0,
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "Decimal value for the effect byte. For example hex CF is decimal 207."
+                      },
+                      "id": {
+                        "title": "Stable Id",
+                        "type": "string",
+                        "description": "Optional stable HomeKit service id. Leave blank unless you are renaming or reordering effects and want to preserve existing HomeKit tiles."
+                      },
+                      "speed": {
+                        "title": "Effect Speed Override",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Optional speed override for this effect. Leave blank to use Default Effect Speed."
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -152,6 +261,9 @@
         "title": "Discovery",
         "type": "object",
         "additionalProperties": false,
+        "condition": {
+          "functionBody": "return model.devices && model.devices.length > 0;"
+        },
         "properties": {
           "enabled": {
             "title": "Log Discovered Candidate Devices",
@@ -211,6 +323,9 @@
         "title": "Bluetooth",
         "type": "object",
         "additionalProperties": false,
+        "condition": {
+          "functionBody": "return model.devices && model.devices.length > 0;"
+        },
         "properties": {
           "binding": {
             "title": "Noble Binding",

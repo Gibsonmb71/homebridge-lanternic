@@ -12,6 +12,22 @@ export type HciDriver = 'default' | 'native' | 'usb' | 'uart';
 
 export type WriteMode = 'auto' | 'withResponse' | 'withoutResponse';
 
+export type SetupMode = 'auto' | 'manual';
+
+export interface LanternIcEffectConfig {
+  name: string;
+  code: number;
+  id?: string;
+  speed?: number;
+}
+
+export interface LanternIcEffectsConfig {
+  enabled?: boolean;
+  defaultSpeed?: number;
+  restoreColorOnDisable?: boolean;
+  items?: LanternIcEffectConfig[];
+}
+
 export interface LanternIcDeviceConfig {
   name: string;
   address: string;
@@ -20,6 +36,7 @@ export interface LanternIcDeviceConfig {
   colorOrder?: ColorOrder;
   powerMode?: PowerMode;
   brightnessMode?: BrightnessMode;
+  effects?: LanternIcEffectsConfig;
 }
 
 export interface LanternIcDiscoveryConfig {
@@ -55,6 +72,7 @@ export interface LanternIcBleConfig {
 
 export interface LanternIcPlatformConfig extends PlatformConfig {
   name?: string;
+  setupMode?: SetupMode;
   devices?: LanternIcDeviceConfig[];
   discovery?: LanternIcDiscoveryConfig;
   ble?: LanternIcBleConfig;
@@ -65,6 +83,7 @@ export interface LanternIcStoredState {
   brightness?: number;
   hue?: number;
   saturation?: number;
+  activeEffect?: string;
 }
 
 export interface LanternIcAccessoryContext {
