@@ -2,17 +2,17 @@
   "name": "homebridge-lanternic",
   "displayName": "LanternIC",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Homebridge plugin for BLE RGBIC/RGBWIC light strips controlled by the Magic Lantern app.",
   "author": "Gibson Bell",
   "license": "MIT",
-  "homepage": "https://github.com/Gibsonmb71/homebridge-lanternic#readme",
+  "homepage": "https://github.com/gibsonmb71/homebridge-lanternic#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Gibsonmb71/homebridge-lanternic.git"
+    "url": "git+https://github.com/gibsonmb71/homebridge-lanternic.git"
   },
   "bugs": {
-    "url": "https://github.com/Gibsonmb71/homebridge-lanternic/issues"
+    "url": "https://github.com/gibsonmb71/homebridge-lanternic/issues"
   },
   "keywords": [
     "homebridge-plugin",
