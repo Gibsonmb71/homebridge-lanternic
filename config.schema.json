@@ -1,0 +1,412 @@
+{
+  "pluginAlias": "LanternIC",
+  "pluginType": "platform",
+  "singular": true,
+  "strictValidation": false,
+  "schema": {
+    "type": "object",
+    "required": [
+      "name"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "LanternIC"
+      },
+      "devices": {
+        "title": "Light Strips",
+        "type": "array",
+        "buttonText": "Add Light Strip",
+        "default": [],
+        "description": "Use discovery logs or lanternic-scan to find Magic Lantern BLE device ids. On Linux this is usually the MAC address; on macOS it may be a long CoreBluetooth id.",
+        "items": {
+          "type": "object",
+          "required": [
+            "name",
+            "address"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "default": "LED Strip"
+            },
+            "address": {
+              "title": "Bluetooth Address / Id",
+              "type": "string",
+              "description": "MAC address or Noble peripheral id. Colons are optional. Use the value printed as address= in LanternIC discovery logs.",
+              "placeholder": "BE:16:70:00:08:2A"
+            },
+            "model": {
+              "title": "Model",
+              "type": "string",
+              "default": "Magic Lantern RGBIC"
+            },
+            "manufacturer": {
+              "title": "Manufacturer",
+              "type": "string",
+              "default": "Magic Lantern"
+            },
+            "colorOrder": {
+              "title": "Color Order",
+              "type": "string",
+              "default": "rgb",
+              "oneOf": [
+                {
+                  "title": "RGB",
+                  "enum": [
+                    "rgb"
+                  ]
+                },
+                {
+                  "title": "RBG",
+                  "enum": [
+                    "rbg"
+                  ]
+                },
+                {
+                  "title": "GRB",
+                  "enum": [
+                    "grb"
+                  ]
+                },
+                {
+                  "title": "GBR",
+                  "enum": [
+                    "gbr"
+                  ]
+                },
+                {
+                  "title": "BRG",
+                  "enum": [
+                    "brg"
+                  ]
+                },
+                {
+                  "title": "BGR",
+                  "enum": [
+                    "bgr"
+                  ]
+                }
+              ]
+            },
+            "powerMode": {
+              "title": "Power Mode",
+              "type": "string",
+              "default": "both",
+              "description": "Both sends RGB black before the native off frame. This is the safest default for firmware that accepts RGB colors but ignores native power frames.",
+              "oneOf": [
+                {
+                  "title": "Native + RGB Black Fallback",
+                  "enum": [
+                    "both"
+                  ]
+                },
+                {
+                  "title": "Native Power Frames Only",
+                  "enum": [
+                    "native"
+                  ]
+                },
+                {
+                  "title": "RGB Black Only",
+                  "enum": [
+                    "rgbBlack"
+                  ]
+                }
+              ]
+            },
+            "brightnessMode": {
+              "title": "Brightness Mode",
+              "type": "string",
+              "default": "rgb",
+              "description": "RGB scaling dims by changing RGB values, which works on strips that ignore native brightness frames.",
+              "oneOf": [
+                {
+                  "title": "RGB Scaling",
+                  "enum": [
+                    "rgb"
+                  ]
+                },
+                {
+                  "title": "Native Brightness Frame",
+                  "enum": [
+                    "native"
+                  ]
+                },
+                {
+                  "title": "Native + RGB Scaling",
+                  "enum": [
+                    "both"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "discovery": {
+        "title": "Discovery",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "title": "Log Discovered Candidate Devices",
+            "type": "boolean",
+            "default": true,
+            "description": "Scan on Homebridge startup and print candidate devices plus copy/paste JSON snippets to the logs."
+          },
+          "autoAdd": {
+            "title": "Auto-Add Discovered Devices",
+            "type": "boolean",
+            "default": false,
+            "description": "Automatically create HomeKit accessories for matching discovered BLE devices. Leave off until your filters only match your strips."
+          },
+          "scanSeconds": {
+            "title": "Scan Time",
+            "type": "integer",
+            "default": 15,
+            "minimum": 3,
+            "maximum": 120
+          },
+          "minRssi": {
+            "title": "Minimum RSSI",
+            "type": "integer",
+            "default": -95,
+            "minimum": -127,
+            "maximum": 0,
+            "description": "Ignore very weak candidates. Higher values are stricter; for example -70 only finds nearby devices."
+          },
+          "namePrefixes": {
+            "title": "Candidate Name Prefixes",
+            "type": "array",
+            "default": [
+              "Triones",
+              "MELK",
+              "ELK-BLEDOM",
+              "LED",
+              "OA"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "serviceUuids": {
+            "title": "Candidate Service UUIDs",
+            "type": "array",
+            "default": [
+              "fff0"
+            ],
+            "description": "Also treat devices advertising these services as candidates.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ble": {
+        "title": "Bluetooth",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "binding": {
+            "title": "Noble Binding",
+            "type": "string",
+            "default": "default",
+            "description": "Default auto-selects macOS, Windows, or Linux HCI. Use Linux HCI when you need explicit HCI settings.",
+            "oneOf": [
+              {
+                "title": "Default",
+                "enum": [
+                  "default"
+                ]
+              },
+              {
+                "title": "Linux HCI",
+                "enum": [
+                  "hci"
+                ]
+              },
+              {
+                "title": "macOS",
+                "enum": [
+                  "mac"
+                ]
+              },
+              {
+                "title": "Windows",
+                "enum": [
+                  "win"
+                ]
+              }
+            ]
+          },
+          "hciDriver": {
+            "title": "Linux HCI Driver",
+            "type": "string",
+            "default": "native",
+            "description": "Native is the normal Linux/Raspberry Pi driver. USB/UART are for dedicated adapters.",
+            "oneOf": [
+              {
+                "title": "Native",
+                "enum": [
+                  "native"
+                ]
+              },
+              {
+                "title": "Default",
+                "enum": [
+                  "default"
+                ]
+              },
+              {
+                "title": "USB",
+                "enum": [
+                  "usb"
+                ]
+              },
+              {
+                "title": "UART",
+                "enum": [
+                  "uart"
+                ]
+              }
+            ]
+          },
+          "hciDeviceId": {
+            "title": "Linux HCI Device Id",
+            "type": "integer",
+            "default": 0,
+            "minimum": 0,
+            "description": "For hci0 use 0, hci1 use 1, and so on."
+          },
+          "hciUserChannel": {
+            "title": "Linux HCI User Channel",
+            "type": "boolean",
+            "default": false,
+            "description": "Advanced Linux option. Usually leave off unless raw HCI permissions conflict with bluetoothd."
+          },
+          "hciExtended": {
+            "title": "BLE 5 Extended Features",
+            "type": "boolean",
+            "description": "Optional advanced setting. Leave blank/default unless your adapter needs extended feature behavior forced."
+          },
+          "serviceUuid": {
+            "title": "Service UUID",
+            "type": "string",
+            "default": "fff0"
+          },
+          "characteristicUuid": {
+            "title": "Characteristic UUID",
+            "type": "string",
+            "default": "fff3"
+          },
+          "keepConnected": {
+            "title": "Keep Connected",
+            "type": "boolean",
+            "default": false,
+            "description": "Maintain a BLE connection and automatically reconnect after disconnects. Improves HomeKit responsiveness but may prevent the Magic Lantern app from connecting at the same time."
+          },
+          "connectTimeoutMs": {
+            "title": "Connect Timeout",
+            "type": "integer",
+            "default": 15000,
+            "minimum": 1000,
+            "maximum": 60000
+          },
+          "scanTimeoutMs": {
+            "title": "Scan Timeout",
+            "type": "integer",
+            "default": 15000,
+            "minimum": 1000,
+            "maximum": 120000
+          },
+          "writeTimeoutMs": {
+            "title": "Write Timeout",
+            "type": "integer",
+            "default": 5000,
+            "minimum": 500,
+            "maximum": 60000
+          },
+          "retryAttempts": {
+            "title": "Retry Attempts",
+            "type": "integer",
+            "default": 3,
+            "minimum": 1,
+            "maximum": 10
+          },
+          "retryDelayMs": {
+            "title": "Retry Delay",
+            "type": "integer",
+            "default": 500,
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "maxRetryDelayMs": {
+            "title": "Max Retry Delay",
+            "type": "integer",
+            "default": 5000,
+            "minimum": 0,
+            "maximum": 60000
+          },
+          "reconnectDelayMs": {
+            "title": "Reconnect Delay",
+            "type": "integer",
+            "default": 1000,
+            "minimum": 0,
+            "maximum": 60000
+          },
+          "maxReconnectDelayMs": {
+            "title": "Max Reconnect Delay",
+            "type": "integer",
+            "default": 60000,
+            "minimum": 1000,
+            "maximum": 600000
+          },
+          "writeDelayMs": {
+            "title": "Delay Between Writes",
+            "type": "integer",
+            "default": 120,
+            "minimum": 0,
+            "maximum": 5000
+          },
+          "idleDisconnectMs": {
+            "title": "Idle Disconnect",
+            "type": "integer",
+            "default": 30000,
+            "minimum": 0,
+            "maximum": 600000
+          },
+          "writeMode": {
+            "title": "Write Mode",
+            "type": "string",
+            "default": "auto",
+            "oneOf": [
+              {
+                "title": "Auto",
+                "enum": [
+                  "auto"
+                ]
+              },
+              {
+                "title": "With Response",
+                "enum": [
+                  "withResponse"
+                ]
+              },
+              {
+                "title": "Without Response",
+                "enum": [
+                  "withoutResponse"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

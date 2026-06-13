@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LanternIC Calibrator</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>LanternIC Calibrator</h1>
+          <p id="statusText">Starting…</p>
+        </div>
+        <div class="target-row">
+          <label for="targetAddress">Target</label>
+          <input id="targetAddress" spellcheck="false">
+          <button id="saveTargetButton" type="button">Use Target</button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <div class="panel color-panel">
+          <div class="panel-heading">
+            <h2>Live Color</h2>
+            <div class="swatch-pair">
+              <span id="requestedSwatch" class="swatch"></span>
+              <span id="correctedSwatch" class="swatch"></span>
+            </div>
+          </div>
+
+          <div class="picker-row">
+            <input id="colorPicker" type="color" value="#ff0000" aria-label="Color picker">
+            <div>
+              <strong id="requestedHex">#ff0000</strong>
+              <span id="correctedHex">sending #ff0000</span>
+            </div>
+          </div>
+
+          <div class="slider-stack" id="rgbControls"></div>
+
+          <div class="button-row">
+            <button id="sendButton" type="button">Send Color</button>
+            <button id="powerOnButton" type="button">On</button>
+            <button id="powerOffButton" type="button">Off</button>
+          </div>
+
+          <div class="swatch-grid" id="swatchGrid"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-heading">
+            <h2>Correction</h2>
+            <button id="resetButton" type="button">Reset</button>
+          </div>
+
+          <div class="slider-stack" id="globalControls"></div>
+          <div class="control-columns">
+            <div>
+              <h3>Gain</h3>
+              <div class="slider-stack" id="gainControls"></div>
+            </div>
+            <div>
+              <h3>Gamma</h3>
+              <div class="slider-stack" id="gammaControls"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-heading">
+            <h2>Test</h2>
+            <button id="sequenceButton" type="button">Run Sequence</button>
+          </div>
+
+          <div class="sequence-list" id="sequenceList"></div>
+
+          <h2>Profile</h2>
+          <div class="button-row">
+            <button id="saveProfileButton" type="button">Save</button>
+            <button id="downloadProfileButton" type="button">Download</button>
+          </div>
+          <textarea id="profileOutput" readonly spellcheck="false"></textarea>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

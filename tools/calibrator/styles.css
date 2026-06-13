@@ -1,0 +1,302 @@
+:root {
+  color-scheme: light;
+  --bg: #f5f7f8;
+  --panel: #ffffff;
+  --text: #182026;
+  --muted: #66727c;
+  --line: #d9e0e5;
+  --accent: #226c5f;
+  --accent-strong: #174f46;
+  --danger: #a93f3f;
+  --shadow: 0 10px 30px rgba(24, 32, 38, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.app-shell {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(320px, 620px);
+  gap: 20px;
+  align-items: end;
+  padding: 6px 0 18px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 760;
+}
+
+h2 {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+h3 {
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+#statusText {
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.target-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.target-row label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.target-row input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 0.9fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.panel {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.swatch-pair {
+  display: flex;
+  gap: 8px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.picker-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+#colorPicker {
+  width: 76px;
+  height: 58px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+#requestedHex,
+#correctedHex {
+  display: block;
+}
+
+#correctedHex {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.slider-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.control {
+  display: grid;
+  grid-template-columns: 76px minmax(120px, 1fr) 64px;
+  gap: 10px;
+  align-items: center;
+}
+
+.control label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.control input[type="range"] {
+  width: 100%;
+}
+
+.control input[type="number"] {
+  width: 64px;
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 7px;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+#sendButton,
+#sequenceButton,
+#saveTargetButton {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+#sendButton:hover,
+#sequenceButton:hover,
+#saveTargetButton:hover {
+  background: var(--accent-strong);
+}
+
+#powerOffButton {
+  color: var(--danger);
+}
+
+.swatch-grid,
+.sequence-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.swatch-button {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  text-align: left;
+}
+
+.mini-swatch {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
+.control-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 170px;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+  resize: vertical;
+  color: var(--text);
+  background: #fbfcfc;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 1100px) {
+  .workspace,
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .app-shell {
+    padding: 14px;
+  }
+
+  .target-row,
+  .picker-row,
+  .control,
+  .control-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .swatch-grid,
+  .sequence-list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
