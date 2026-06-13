@@ -2,11 +2,9 @@
 
 Homebridge plugin for BLE RGBIC/RGBWIC light strips controlled by the Magic Lantern app.
 
-The goal is a reliable local-only bridge for the common unbranded Magic Lantern strips.
-
 ## Status
 
-LanternIC is a hardware-tested pre-release plugin. It is designed for production-style Homebridge use, with the important caveat that these unbranded Magic Lantern BLE strips ship with multiple firmware variants.
+These unbranded Magic Lantern BLE strips ship with multiple firmware variants so it's hard to ensure compatibility for all strips.
 
 - HomeKit Lightbulb service
 - On/off with RGB-black fallback plus optional native Magic Lantern power frames
@@ -18,7 +16,7 @@ LanternIC is a hardware-tested pre-release plugin. It is designed for production
 - Command-builder tests for the known Magic Lantern frames
 - Package smoke tests against Homebridge 1 and 2 on Node.js 22 and 24 in CI
 
-Effects, segment control, RGBW white-channel behavior, and startup scenes are deliberately left out until more real devices are tested.
+Effects and segment control are not supported as there is no good way to expose them in Apple Home.
 
 ## Install
 
@@ -232,8 +230,6 @@ The command builders are isolated so we can add variants if your strip uses a sl
 - Avoid enabling discovery `autoAdd` until your filters are tight. Some nearby BLE devices can share generic names or services and should not be bridged as lights.
 
 ## Reliability Choices
-
-This plugin avoids the usual BLE plugin failure pattern of overlapping scans, overlapping writes, and stale connections:
 
 - All BLE operations are serialized through a single manager queue.
 - Every characteristic write has a timeout and is retried with exponential backoff.
