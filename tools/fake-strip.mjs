@@ -1,7 +1,7 @@
 import { withBindings } from '@stoprocent/bleno';
 
 const binding = process.env.LANTERNIC_BINDING ?? 'default';
-const name = process.env.LANTERNIC_FAKE_NAME ?? 'MELK-CODEX01';
+const name = process.env.LANTERNIC_FAKE_NAME ?? 'MELK-LANTERNIC01';
 const firmware = Buffer.from(process.env.LANTERNIC_FAKE_FIRMWARE ?? 'WCKJ3016FV25HCV6');
 const serviceUuid = 'fff0';
 const writeCharacteristicUuid = 'fff3';
