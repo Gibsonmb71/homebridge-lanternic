@@ -210,7 +210,7 @@ The core frames available here are:
 - Brightness: `7e0401xx01ffff00ef`, where `xx` is 0-100 decimal encoded as one byte
 - Effect speed: `7e0402xxffffff00ef`, where `xx` is 0-100 decimal encoded as one byte
 - Basic effect: `7e0503xx06ffff00ef`
-
+(> Protocol notes in this section are based packet captures from [@kassabov](https://github.com/kassabov) in Home Assistant Core issue [#145934](https://github.com/home-assistant/core/issues/145934) thanks!
 These protocol notes come from Home Assistant community reverse-engineering reports and BLE packet examples:
 
 - Home Assistant Core issue: <https://github.com/home-assistant/core/issues/145934>
