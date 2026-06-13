@@ -12,6 +12,8 @@ export type HciDriver = 'default' | 'native' | 'usb' | 'uart';
 
 export type WriteMode = 'auto' | 'withResponse' | 'withoutResponse';
 
+export type SetupMode = 'auto' | 'manual';
+
 export interface LanternIcEffectConfig {
   name: string;
   code: number;
@@ -70,6 +72,7 @@ export interface LanternIcBleConfig {
 
 export interface LanternIcPlatformConfig extends PlatformConfig {
   name?: string;
+  setupMode?: SetupMode;
   devices?: LanternIcDeviceConfig[];
   discovery?: LanternIcDiscoveryConfig;
   ble?: LanternIcBleConfig;

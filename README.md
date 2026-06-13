@@ -48,9 +48,11 @@ LanternIC supports Homebridge UI through `config.schema.json`.
 1. Install the plugin.
 2. Open Homebridge UI.
 3. Go to Plugins, select LanternIC, then Settings.
-4. Enable `Log Discovered Candidate Devices`.
-5. Restart Homebridge and open the logs.
-6. Copy the `LanternIC device config: {...}` line for your strip into the `Light Strips` list.
+4. Choose `Auto Mode` for first setup, or `Manual Mode` if you already know your strip's Bluetooth address.
+5. Save and restart Homebridge.
+6. In Auto Mode, LanternIC scans and auto-adds matching first-run candidates. In Manual Mode, paste the address into the `Light Strips` list.
+
+After at least one light strip is configured, the setup mode picker is hidden and the advanced Discovery/Bluetooth settings become available.
 
 You can also use the local scanner:
 
@@ -68,7 +70,7 @@ LANTERNIC_SCAN_ALL=1 lanternic-scan
 
 When working from this repository instead of a global install, use `npm run scan` in place of `lanternic-scan`.
 
-`Auto-Add Discovered Devices` can create HomeKit accessories automatically for matching BLE candidates. Leave it off until the discovery filters only match your strips, because nearby BLE devices may advertise similar services.
+First-run `Auto Mode` can create HomeKit accessories automatically for matching BLE candidates. After setup, use the advanced `Auto-Add Discovered Devices` setting only when your filters are tight, because nearby BLE devices may advertise similar services.
 
 ## CLI Tools
 
@@ -139,6 +141,7 @@ Start with discovery enabled and no devices:
 {
   "platform": "LanternIC",
   "name": "LanternIC",
+  "setupMode": "auto",
   "devices": [],
   "discovery": {
     "enabled": true,
@@ -160,26 +163,7 @@ Restart Homebridge and look for candidate device addresses in the logs. Then add
       "model": "Magic Lantern RGBIC",
       "colorOrder": "rgb",
       "powerMode": "both",
-      "brightnessMode": "rgb",
-      "effects": {
-        "enabled": true,
-        "defaultSpeed": 39,
-        "restoreColorOnDisable": true,
-        "items": [
-          {
-            "name": "AutoPlay",
-            "code": 0
-          },
-          {
-            "name": "Magic Back",
-            "code": 1
-          },
-          {
-            "name": "Yellow Marquee",
-            "code": 207
-          }
-        ]
-      }
+      "brightnessMode": "rgb"
     }
   ],
   "discovery": {
@@ -221,7 +205,7 @@ Restart Homebridge and look for candidate device addresses in the logs. Then add
 
 Magic Lantern animation effects are exposed as optional `Switch` services on the same HomeKit accessory as the light. Apple Home does not provide a native effect picker for a `Lightbulb`, and custom effect characteristics usually do not appear in the Home app.
 
-Enable effects per strip:
+Effects are disabled by default. Enable them per strip:
 
 ```json
 {

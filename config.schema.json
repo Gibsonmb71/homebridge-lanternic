@@ -15,12 +15,38 @@
         "type": "string",
         "default": "LanternIC"
       },
+      "setupMode": {
+        "title": "Setup Mode",
+        "type": "string",
+        "default": "auto",
+        "description": "Choose Auto Mode for first setup unless you already know your strip's Bluetooth address.",
+        "oneOf": [
+          {
+            "title": "Auto Mode",
+            "enum": [
+              "auto"
+            ]
+          },
+          {
+            "title": "Manual Mode",
+            "enum": [
+              "manual"
+            ]
+          }
+        ],
+        "condition": {
+          "functionBody": "return !model.devices || model.devices.length === 0;"
+        }
+      },
       "devices": {
         "title": "Light Strips",
         "type": "array",
         "buttonText": "Add Light Strip",
         "default": [],
         "description": "Use discovery logs or lanternic-scan to find Magic Lantern BLE device ids. On Linux this is usually the MAC address; on macOS it may be a long CoreBluetooth id.",
+        "condition": {
+          "functionBody": "return (model.devices && model.devices.length > 0) || model.setupMode === 'manual';"
+        },
         "items": {
           "type": "object",
           "required": [
@@ -235,6 +261,9 @@
         "title": "Discovery",
         "type": "object",
         "additionalProperties": false,
+        "condition": {
+          "functionBody": "return model.devices && model.devices.length > 0;"
+        },
         "properties": {
           "enabled": {
             "title": "Log Discovered Candidate Devices",
@@ -294,6 +323,9 @@
         "title": "Bluetooth",
         "type": "object",
         "additionalProperties": false,
+        "condition": {
+          "functionBody": "return model.devices && model.devices.length > 0;"
+        },
         "properties": {
           "binding": {
             "title": "Noble Binding",
