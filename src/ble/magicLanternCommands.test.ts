@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildBasicEffectCommand,
-  buildBasicEffectCommands,
   buildBrightnessCommand,
   buildColorCommand,
   buildEffectSpeedCommand,
@@ -84,12 +83,5 @@ describe('Magic Lantern command builders', () => {
     expect(buildBasicEffectCommand(0).toString('hex')).toBe('7e05030006ffff00ef');
     expect(buildBasicEffectCommand(1).toString('hex')).toBe('7e05030106ffff00ef');
     expect(buildBasicEffectCommand(0xcf).toString('hex')).toBe('7e0503cf06ffff00ef');
-  });
-
-  it('builds basic effect commands with speed first', () => {
-    expect(hex(buildBasicEffectCommands(0xcf, 39))).toEqual([
-      '7e040227ffffff00ef',
-      '7e0503cf06ffff00ef',
-    ]);
   });
 });

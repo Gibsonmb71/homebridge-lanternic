@@ -60,7 +60,7 @@ export class LanternIcPlatform implements DynamicPlatformPlugin {
         continue;
       }
 
-      if (this.discoveryAutoAdd(devices) && accessory.context.autoDiscovered) {
+      if (this.discoveryAutoAdd() && accessory.context.autoDiscovered) {
         const reason = discoverySucceeded ? 'it was previously auto-discovered' : 'discovery scan failed';
         this.log.info(`Keeping cached auto-discovered accessory because ${reason}:`, accessory.displayName);
         continue;
@@ -130,7 +130,7 @@ export class LanternIcPlatform implements DynamicPlatformPlugin {
       for (const candidate of candidates) {
         this.logCandidate(candidate);
 
-        if (!this.discoveryAutoAdd(configuredDevices) || this.isConfigured(candidate, configuredDevices)) {
+        if (!this.discoveryAutoAdd() || this.isConfigured(candidate, configuredDevices)) {
           continue;
         }
 
@@ -172,13 +172,8 @@ export class LanternIcPlatform implements DynamicPlatformPlugin {
     return devices.some(device => normalizeBluetoothId(device.address) === candidateId);
   }
 
-  private discoveryAutoAdd(configuredDevices: LanternIcDeviceConfig[]): boolean {
-    return this.config.discovery?.autoAdd === true
-      || (this.firstSetupAutoMode() && configuredDevices.length === 0);
-  }
-
-  private firstSetupAutoMode(): boolean {
-    return this.config.setupMode !== 'manual';
+  private discoveryAutoAdd(): boolean {
+    return this.config.discovery?.autoAdd === true;
   }
 
   private validDevices(): LanternIcDeviceConfig[] {
