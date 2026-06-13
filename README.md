@@ -56,9 +56,12 @@ LanternIC supports Homebridge UI through `config.schema.json`.
 1. Install the plugin.
 2. Open Homebridge UI.
 3. Go to Plugins, select LanternIC, then Settings.
-4. Enable `Log Discovered Candidate Devices`.
+4. Leave `Scan For Light Strips On Startup` enabled.
 5. Restart Homebridge and open the logs.
-6. Copy the `LanternIC device config: {...}` line for your strip into the `Light Strips` list.
+6. Copy the `LanternIC device config: {...}` line for your strip into `Configured Light Strips`.
+7. Save and restart Homebridge again.
+
+Most setups only need a strip name and Bluetooth address. Use `Show Advanced Settings` only for Bluetooth adapter options, discovery filters, or protocol fallback tuning.
 
 You can also use the local scanner:
 
@@ -76,7 +79,7 @@ LANTERNIC_SCAN_ALL=1 lanternic-scan
 
 When working from this repository instead of a global install, use `npm run scan` in place of `lanternic-scan`.
 
-`Auto-Add Discovered Devices` can create HomeKit accessories automatically for matching BLE candidates. Leave it off until the discovery filters only match your strips, because nearby BLE devices may advertise similar services.
+`Automatically Add Discovered Strips` can create HomeKit accessories for matching BLE candidates. Leave it off until you are nearby and ready to test, because nearby BLE devices may advertise similar services.
 
 ## CLI Tools
 
@@ -146,6 +149,7 @@ Start with discovery enabled and no devices:
 {
   "platform": "LanternIC",
   "name": "LanternIC",
+  "showAdvanced": false,
   "devices": [],
   "discovery": {
     "enabled": true,
@@ -164,6 +168,7 @@ Restart Homebridge and look for candidate device addresses in the logs. Then add
     {
       "name": "TV Strip",
       "address": "BE:16:70:00:08:2A",
+      "showAdvanced": false,
       "model": "Magic Lantern RGBIC",
       "colorOrder": "rgb",
       "powerMode": "both",
@@ -173,6 +178,7 @@ Restart Homebridge and look for candidate device addresses in the logs. Then add
   "discovery": {
     "enabled": true,
     "autoAdd": false,
+    "showAdvanced": false,
     "scanSeconds": 20,
     "minRssi": -95,
     "namePrefixes": [
