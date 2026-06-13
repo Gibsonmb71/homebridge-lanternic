@@ -15,6 +15,7 @@ export type WriteMode = 'auto' | 'withResponse' | 'withoutResponse';
 export interface LanternIcDeviceConfig {
   name: string;
   address: string;
+  showAdvanced?: boolean;
   manufacturer?: string;
   model?: string;
   colorOrder?: ColorOrder;
@@ -25,6 +26,7 @@ export interface LanternIcDeviceConfig {
 export interface LanternIcDiscoveryConfig {
   enabled?: boolean;
   autoAdd?: boolean;
+  showAdvanced?: boolean;
   scanSeconds?: number;
   minRssi?: number;
   namePrefixes?: string[];
@@ -55,6 +57,7 @@ export interface LanternIcBleConfig {
 
 export interface LanternIcPlatformConfig extends PlatformConfig {
   name?: string;
+  showAdvanced?: boolean;
   devices?: LanternIcDeviceConfig[];
   discovery?: LanternIcDiscoveryConfig;
   ble?: LanternIcBleConfig;

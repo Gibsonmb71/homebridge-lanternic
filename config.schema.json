@@ -15,12 +15,18 @@
         "type": "string",
         "default": "LanternIC"
       },
+      "showAdvanced": {
+        "title": "Show Advanced Settings",
+        "type": "boolean",
+        "default": false,
+        "description": "Show Bluetooth transport, discovery filters, and protocol tuning options. Most users can leave this off."
+      },
       "devices": {
-        "title": "Light Strips",
+        "title": "Configured Light Strips",
         "type": "array",
         "buttonText": "Add Light Strip",
         "default": [],
-        "description": "Use discovery logs or lanternic-scan to find Magic Lantern BLE device ids. On Linux this is usually the MAC address; on macOS it may be a long CoreBluetooth id.",
+        "description": "Add strips discovered in the logs. Usually only Name and Bluetooth Address are needed.",
         "items": {
           "type": "object",
           "required": [
@@ -37,23 +43,39 @@
             "address": {
               "title": "Bluetooth Address / Id",
               "type": "string",
-              "description": "MAC address or Noble peripheral id. Colons are optional. Use the value printed as address= in LanternIC discovery logs.",
+              "description": "Use the address printed in LanternIC discovery logs. Colons are optional.",
               "placeholder": "BE:16:70:00:08:2A"
+            },
+            "showAdvanced": {
+              "title": "Show Advanced Strip Settings",
+              "type": "boolean",
+              "default": false,
+              "description": "Show color order and protocol fallback settings for this strip."
             },
             "model": {
               "title": "Model",
               "type": "string",
-              "default": "Magic Lantern RGBIC"
+              "default": "Magic Lantern RGBIC",
+              "condition": {
+                "functionBody": "return model.devices && model.devices.showAdvanced === true;"
+              }
             },
             "manufacturer": {
               "title": "Manufacturer",
               "type": "string",
-              "default": "Magic Lantern"
+              "default": "Magic Lantern",
+              "condition": {
+                "functionBody": "return model.devices && model.devices.showAdvanced === true;"
+              }
             },
             "colorOrder": {
               "title": "Color Order",
               "type": "string",
               "default": "rgb",
+              "description": "Change this only if red, green, and blue appear swapped in HomeKit.",
+              "condition": {
+                "functionBody": "return model.devices && model.devices.showAdvanced === true;"
+              },
               "oneOf": [
                 {
                   "title": "RGB",
@@ -98,6 +120,9 @@
               "type": "string",
               "default": "both",
               "description": "Both sends RGB black before the native off frame. This is the safest default for firmware that accepts RGB colors but ignores native power frames.",
+              "condition": {
+                "functionBody": "return model.devices && model.devices.showAdvanced === true;"
+              },
               "oneOf": [
                 {
                   "title": "Native + RGB Black Fallback",
@@ -124,6 +149,9 @@
               "type": "string",
               "default": "rgb",
               "description": "RGB scaling dims by changing RGB values, which works on strips that ignore native brightness frames.",
+              "condition": {
+                "functionBody": "return model.devices && model.devices.showAdvanced === true;"
+              },
               "oneOf": [
                 {
                   "title": "RGB Scaling",
@@ -149,28 +177,37 @@
         }
       },
       "discovery": {
-        "title": "Discovery",
+        "title": "Setup & Discovery",
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "enabled": {
-            "title": "Log Discovered Candidate Devices",
+            "title": "Scan For Light Strips On Startup",
             "type": "boolean",
             "default": true,
-            "description": "Scan on Homebridge startup and print candidate devices plus copy/paste JSON snippets to the logs."
+            "description": "Print nearby Magic Lantern candidates in the Homebridge logs with copy/paste device snippets."
           },
           "autoAdd": {
-            "title": "Auto-Add Discovered Devices",
+            "title": "Automatically Add Discovered Strips",
             "type": "boolean",
             "default": false,
-            "description": "Automatically create HomeKit accessories for matching discovered BLE devices. Leave off until your filters only match your strips."
+            "description": "Create HomeKit accessories for matching candidates. Leave off unless you are nearby and ready to test."
+          },
+          "showAdvanced": {
+            "title": "Show Advanced Discovery Filters",
+            "type": "boolean",
+            "default": false,
+            "description": "Show scan duration, RSSI, name prefix, and service UUID filters."
           },
           "scanSeconds": {
             "title": "Scan Time",
             "type": "integer",
             "default": 15,
             "minimum": 3,
-            "maximum": 120
+            "maximum": 120,
+            "condition": {
+              "functionBody": "return model.showAdvanced === true || (model.discovery && model.discovery.showAdvanced === true);"
+            }
           },
           "minRssi": {
             "title": "Minimum RSSI",
@@ -178,7 +215,10 @@
             "default": -95,
             "minimum": -127,
             "maximum": 0,
-            "description": "Ignore very weak candidates. Higher values are stricter; for example -70 only finds nearby devices."
+            "description": "Ignore very weak candidates. Higher values are stricter; for example -70 only finds nearby devices.",
+            "condition": {
+              "functionBody": "return model.showAdvanced === true || (model.discovery && model.discovery.showAdvanced === true);"
+            }
           },
           "namePrefixes": {
             "title": "Candidate Name Prefixes",
@@ -192,6 +232,9 @@
             ],
             "items": {
               "type": "string"
+            },
+            "condition": {
+              "functionBody": "return model.showAdvanced === true || (model.discovery && model.discovery.showAdvanced === true);"
             }
           },
           "serviceUuids": {
@@ -203,6 +246,9 @@
             "description": "Also treat devices advertising these services as candidates.",
             "items": {
               "type": "string"
+            },
+            "condition": {
+              "functionBody": "return model.showAdvanced === true || (model.discovery && model.discovery.showAdvanced === true);"
             }
           }
         }
@@ -211,6 +257,9 @@
         "title": "Bluetooth",
         "type": "object",
         "additionalProperties": false,
+        "condition": {
+          "functionBody": "return model.showAdvanced === true;"
+        },
         "properties": {
           "binding": {
             "title": "Noble Binding",
