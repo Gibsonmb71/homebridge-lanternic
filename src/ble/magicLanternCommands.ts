@@ -68,10 +68,3 @@ export const buildEffectSpeedCommand = (speed: number): Buffer => {
 export const buildBasicEffectCommand = (effectCode: number): Buffer => {
   return frame(0x7e, 0x05, 0x03, effectCode, 0x06, 0xff, 0xff, 0x00, 0xef);
 };
-
-export const buildBasicEffectCommands = (effectCode: number, speed: number): Buffer[] => {
-  return [
-    buildEffectSpeedCommand(speed),
-    buildBasicEffectCommand(effectCode),
-  ];
-};

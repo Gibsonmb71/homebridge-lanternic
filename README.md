@@ -1,6 +1,7 @@
 # Homebridge LanternIC
 
 [![npm version](https://img.shields.io/npm/v/homebridge-lanternic.svg)](https://www.npmjs.com/package/homebridge-lanternic)
+[![npm downloads](https://img.shields.io/npm/dm/homebridge-lanternic.svg)](https://www.npmjs.com/package/homebridge-lanternic)
 [![CI](https://github.com/Gibsonmb71/homebridge-lanternic/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Gibsonmb71/homebridge-lanternic/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/node/v/homebridge-lanternic.svg)](https://www.npmjs.com/package/homebridge-lanternic)
 [![Homebridge](https://img.shields.io/badge/homebridge-1.8%20%7C%202.x-blue.svg)](https://homebridge.io/)
@@ -15,7 +16,6 @@ These unbranded Magic Lantern BLE strips ship with multiple firmware variants so
 - HomeKit Lightbulb service
 - On/off with RGB-black fallback plus optional native Magic Lantern power frames
 - Brightness via RGB scaling by default, with optional native Magic Lantern brightness frames
-- Optional HomeKit switches for Magic Lantern effects
 - HomeKit on/off, brightness, and color control confirmed on a `MELK-OC21WCT31` strip
 - Homebridge UI config schema
 - BLE discovery with log snippets and optional auto-add
@@ -23,7 +23,7 @@ These unbranded Magic Lantern BLE strips ship with multiple firmware variants so
 - Command-builder tests for the known Magic Lantern frames
 - Package smoke tests against Homebridge 1 and 2 on Node.js 22 and 24 in CI
 
-Segment-level IC control is not supported yet.
+Effects and segment control are not supported as there is no good way to expose them in Apple Home.
 
 ## Install
 
@@ -56,11 +56,9 @@ LanternIC supports Homebridge UI through `config.schema.json`.
 1. Install the plugin.
 2. Open Homebridge UI.
 3. Go to Plugins, select LanternIC, then Settings.
-4. Choose `Auto Mode` for first setup, or `Manual Mode` if you already know your strip's Bluetooth address.
-5. Save and restart Homebridge.
-6. In Auto Mode, LanternIC scans and auto-adds matching first-run candidates. In Manual Mode, paste the address into the `Light Strips` list.
-
-After at least one light strip is configured, the setup mode picker is hidden and the advanced Discovery/Bluetooth settings become available.
+4. Enable `Log Discovered Candidate Devices`.
+5. Restart Homebridge and open the logs.
+6. Copy the `LanternIC device config: {...}` line for your strip into the `Light Strips` list.
 
 You can also use the local scanner:
 
@@ -78,7 +76,7 @@ LANTERNIC_SCAN_ALL=1 lanternic-scan
 
 When working from this repository instead of a global install, use `npm run scan` in place of `lanternic-scan`.
 
-First-run `Auto Mode` can create HomeKit accessories automatically for matching BLE candidates. After setup, use the advanced `Auto-Add Discovered Devices` setting only when your filters are tight, because nearby BLE devices may advertise similar services.
+`Auto-Add Discovered Devices` can create HomeKit accessories automatically for matching BLE candidates. Leave it off until the discovery filters only match your strips, because nearby BLE devices may advertise similar services.
 
 ## CLI Tools
 
@@ -89,7 +87,6 @@ lanternic-scan
 lanternic-explore <address>
 lanternic-send <address> rgb ff0000
 lanternic-send <address> brightness 50
-lanternic-send <address> effect 207 39
 lanternic-send-sequence <address> 7e070503ff000010ef 7e07050300ff0010ef
 lanternic-calibrate <address>
 ```
@@ -149,7 +146,6 @@ Start with discovery enabled and no devices:
 {
   "platform": "LanternIC",
   "name": "LanternIC",
-  "setupMode": "auto",
   "devices": [],
   "discovery": {
     "enabled": true,
@@ -207,31 +203,6 @@ Restart Homebridge and look for candidate device addresses in the logs. Then add
 6. If colors are swapped, change `colorOrder`.
 7. If Off leaves the strip visibly on, keep `powerMode` as `both` or try `rgbBlack`.
 8. If brightness does not change, keep `brightnessMode` as `rgb`; if it double-dims, try `native`.
-9. If effects are enabled, test one effect switch at a time. Turning an effect switch off should restore the saved HomeKit color.
-
-## HomeKit Effects
-
-Magic Lantern animation effects are exposed as optional `Switch` services on the same HomeKit accessory as the light. Apple Home does not provide a native effect picker for a `Lightbulb`, and custom effect characteristics usually do not appear in the Home app.
-
-Effects are disabled by default. Enable them per strip:
-
-```json
-{
-  "effects": {
-    "enabled": true,
-    "defaultSpeed": 39,
-    "restoreColorOnDisable": true
-  }
-}
-```
-
-When `effects.enabled` is true and no custom `items` list is provided, LanternIC creates these starter switches:
-
-- AutoPlay: effect code `0`
-- Magic Back: effect code `1`
-- Yellow Marquee: effect code `207` (`0xcf`)
-
-Only one effect switch is kept active at a time. Turning on an effect sends the speed frame followed by the effect frame. Turning off the active effect restores the saved HomeKit color and brightness when `restoreColorOnDisable` is true.
 
 ## Protocol Notes
 
