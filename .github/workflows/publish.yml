@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   publish:
@@ -21,8 +20,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
-      - run: npm install -g npm@latest
-      - run: npm --version
-
       - run: npm ci
       - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
