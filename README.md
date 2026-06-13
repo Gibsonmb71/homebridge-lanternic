@@ -141,6 +141,33 @@ DisablePlugins=pnat
 
 If Linux discovery works from the CLI but Homebridge cannot connect, run the `setcap` command against the exact Node binary used by `hb-service`, then restart Homebridge. If `keepConnected` is enabled, expect the Magic Lantern iPhone app to fail or hang while Homebridge owns the BLE connection.
 
+If the logs show `Timeout waiting for Noble to be powered on`, Noble cannot see a powered Bluetooth adapter from the Homebridge process. Check that Linux sees the adapter:
+
+```sh
+bluetoothctl show
+rfkill list bluetooth
+systemctl status bluetooth --no-pager
+```
+
+Then unblock and power it on:
+
+```sh
+sudo rfkill unblock bluetooth
+sudo systemctl restart bluetooth
+bluetoothctl power on
+```
+
+If the adapter is powered in `bluetoothctl` but Homebridge still times out, either run `setcap` against the exact Node binary used by Homebridge, or try the BlueZ DBus binding:
+
+```json
+{
+  "ble": {
+    "binding": "dbus",
+    "writeMode": "withoutResponse"
+  }
+}
+```
+
 ## Homebridge Config
 
 Start with discovery enabled and no devices:

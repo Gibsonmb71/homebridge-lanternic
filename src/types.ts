@@ -6,7 +6,7 @@ export type PowerMode = 'native' | 'rgbBlack' | 'both';
 
 export type BrightnessMode = 'rgb' | 'native' | 'both';
 
-export type NobleBinding = 'default' | 'hci' | 'mac' | 'win';
+export type NobleBinding = 'default' | 'hci' | 'dbus' | 'mac' | 'win';
 
 export type HciDriver = 'default' | 'native' | 'usb' | 'uart';
 

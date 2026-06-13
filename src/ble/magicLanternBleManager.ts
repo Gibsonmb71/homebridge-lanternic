@@ -80,7 +80,11 @@ export class MagicLanternBleManager {
       writeMode: config?.writeMode ?? 'auto',
     };
 
-    this.noble = withBindings(this.options.binding, this.bindingOptions()) as unknown as NobleAdapter;
+    // @stoprocent/noble supports "dbus" at runtime, but its exported BindingType omits it.
+    this.noble = withBindings(
+      this.options.binding as Parameters<typeof withBindings>[0],
+      this.bindingOptions(),
+    ) as unknown as NobleAdapter;
   }
 
   createClient(device: LanternIcDeviceConfig): MagicLanternBleClient {
