@@ -138,7 +138,8 @@ try {
   await mkdir(hbDir);
 
   const packOutput = run('npm', ['pack', '--pack-destination', packDir]);
-  const tarball = packOutput.trim().split(/\r?\n/u).findLast(line => line.endsWith('.tgz'));
+  const packOutputLines = packOutput.trim().split(/\r?\n/u);
+  const tarball = [...packOutputLines].reverse().find(line => line.endsWith('.tgz'));
 
   if (!tarball) {
     throw new Error(`Could not find packed tarball in npm output:\n${packOutput}`);
