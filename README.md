@@ -9,7 +9,7 @@
 
 Homebridge plugin for BLE RGBIC/RGBWIC light strips controlled by the Magic Lantern app.
 
-## Status
+## Features
 
 These unbranded Magic Lantern BLE strips ship with multiple firmware variants so it's hard to ensure compatibility for all strips.
 
@@ -210,6 +210,9 @@ Since each strip is different, you may need to configure your settings different
 6. If colors are swapped, change `colorOrder`.
 7. If Off leaves the strip visibly on, keep `powerMode` as `both` or try `rgbBlack`.
 8. If brightness does not change, keep `brightnessMode` as `rgb`; if it double-dims, try `native`.
+
+## Reconnect
+If automatic reconnect fails, power cycle the strip. If it flashes, you're reconnected.
 
 ## Protocol Notes
 
