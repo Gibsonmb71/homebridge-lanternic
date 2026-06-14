@@ -20,6 +20,8 @@ interface LightState {
 }
 
 export class LanternIcPlatformAccessory {
+  private static readonly writeFailureLogWindowMs = 60_000;
+
   private readonly device: LanternIcDeviceConfig;
   private readonly client: MagicLanternBleClient;
   private readonly accessory: PlatformAccessory<LanternIcAccessoryContext>;
@@ -30,6 +32,7 @@ export class LanternIcPlatformAccessory {
     resolve: () => void;
     reject: (error: unknown) => void;
   }> = [];
+  private readonly writeFailureLogTimes = new Map<string, number>();
 
   constructor(
     private readonly platform: LanternIcPlatform,
@@ -64,22 +67,50 @@ export class LanternIcPlatformAccessory {
 
     this.service.getCharacteristic(this.platform.Characteristic.On)
       .onGet(() => this.state.on)
-      .onSet(value => this.setOn(Boolean(value)));
+      .onSet(value => this.handleSet('On', () => this.setOn(Boolean(value))));
 
     this.service.getCharacteristic(this.platform.Characteristic.Brightness)
       .onGet(() => this.state.brightness)
-      .onSet(value => this.setBrightness(Number(value)));
+      .onSet(value => this.handleSet('Brightness', () => this.setBrightness(Number(value))));
 
     this.service.getCharacteristic(this.platform.Characteristic.Hue)
       .onGet(() => this.state.hue)
-      .onSet(value => this.setHue(Number(value)));
+      .onSet(value => this.handleSet('Hue', () => this.setHue(Number(value))));
 
     this.service.getCharacteristic(this.platform.Characteristic.Saturation)
       .onGet(() => this.state.saturation)
-      .onSet(value => this.setSaturation(Number(value)));
+      .onSet(value => this.handleSet('Saturation', () => this.setSaturation(Number(value))));
 
     this.client.onReconnect(() => this.resyncAfterReconnect());
     this.client.start();
+  }
+
+  private async handleSet(characteristicName: string, operation: () => Promise<void>): Promise<void> {
+    try {
+      await operation();
+    } catch (error) {
+      this.logWriteFailure(characteristicName, error);
+    }
+  }
+
+  private logWriteFailure(characteristicName: string, error: unknown): void {
+    const message = error instanceof Error ? error.message : String(error);
+    const key = `${characteristicName}:${message}`;
+    const now = Date.now();
+
+    const lastLoggedAt = this.writeFailureLogTimes.get(key);
+
+    if (typeof lastLoggedAt === 'number' && now - lastLoggedAt < LanternIcPlatformAccessory.writeFailureLogWindowMs) {
+      this.platform.log.debug(`[${this.device.name}] Suppressed repeated ${characteristicName} BLE write failure: ${message}`);
+      return;
+    }
+
+    this.writeFailureLogTimes.set(key, now);
+    this.platform.log.warn(`[${this.device.name}] Could not apply ${characteristicName} update over BLE: ${message}`);
+
+    if (error instanceof Error && error.stack) {
+      this.platform.log.debug(`[${this.device.name}] ${characteristicName} BLE write failure stack:`, error.stack);
+    }
   }
 
   private async setOn(onValue: boolean): Promise<void> {
