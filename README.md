@@ -199,7 +199,8 @@ Restart Homebridge and look for candidate device addresses in the logs. Then add
 }
 ```
 
-## Test Loop With A Real Strip
+## Troubleshooting
+Since each strip is different, you may need to configure your settings differently.
 
 1. Pair/configure the strip in the Magic Lantern app first so it is powered, reachable, and known-good.
 2. Fully quit the Magic Lantern app before testing Homebridge. BLE devices usually allow only one active central connection.
