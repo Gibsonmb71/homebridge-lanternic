@@ -21,7 +21,7 @@ These unbranded Magic Lantern BLE strips ship with multiple firmware variants so
 - BLE discovery with log snippets and optional auto-add
 - Serialized BLE writes with timeout, retry/backoff, reconnect, and optional keep-alive
 - Command-builder tests for the known Magic Lantern frames
-- Package smoke tests against Homebridge 1 and 2 on Node.js 22 and 24 in CI
+- Package smoke tests against Homebridge 1 and 2 across supported Node.js LTS versions in CI
 
 Effects and segment control are not supported as there is no good way to expose them in Apple Home.
 
@@ -103,7 +103,7 @@ LANTERNIC_BINDING=mac lanternic-scan
 
 ## Linux / Raspberry Pi
 
-This plugin uses `@stoprocent/noble`, which ships Linux prebuilds for common Raspberry Pi and x64 platforms. Homebridge should run on Node.js 22 or 24.
+This plugin uses `@stoprocent/noble`. Homebridge should run on any Node.js version supported by this package.
 
 Install Bluetooth dependencies:
 
