@@ -1,5 +1,9 @@
 import js from '@eslint/js';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import tseslint from 'typescript-eslint';
+
+const configDir = dirname(fileURLToPath(import.meta.url));
 
 export default tseslint.config(
   js.configs.recommended,
@@ -7,6 +11,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist',
+      '.test-dist',
       'coverage',
     ],
   },
@@ -17,7 +22,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: configDir,
       },
     },
     rules: {
