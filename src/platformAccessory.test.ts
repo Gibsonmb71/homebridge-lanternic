@@ -118,8 +118,12 @@ const createLog = () => {
 
 const createPlatformAccessory = (writeCommands: MagicLanternBleClient['writeCommands']) => {
   const log = createLog();
+  let reconnectHandler: (() => Promise<void> | void) | undefined;
   const client = {
-    onReconnect: () => () => undefined,
+    onReconnect: (handler: () => Promise<void> | void) => {
+      reconnectHandler = handler;
+      return () => undefined;
+    },
     start: () => undefined,
     writeCommands,
   };
@@ -144,6 +148,10 @@ const createPlatformAccessory = (writeCommands: MagicLanternBleClient['writeComm
   return {
     accessory,
     log,
+    reconnect: async () => {
+      assert.ok(reconnectHandler, 'expected reconnect handler to be registered');
+      await reconnectHandler();
+    },
   };
 };
 
@@ -181,4 +189,18 @@ test('repeated characteristic write failures are throttled', async () => {
   assert.equal(log.warnings.length, 1);
   assert.equal(log.debugMessages.length, 2);
   assert.match(log.debugMessages[1], /Suppressed repeated On BLE write failure/);
+});
+
+test('reconnect resync sends off commands when cached HomeKit state is off', async () => {
+  const writes: string[][] = [];
+  const { reconnect } = createPlatformAccessory(async commands => {
+    writes.push(commands.map(command => command.toString('hex')));
+  });
+
+  await reconnect();
+
+  assert.deepEqual(writes, [[
+    '7e07050300000010ef',
+    '7e0404000000ff00ef',
+  ]]);
 });

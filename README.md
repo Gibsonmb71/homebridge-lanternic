@@ -19,7 +19,7 @@ These unbranded Magic Lantern BLE strips ship with multiple firmware variants so
 - HomeKit on/off, brightness, and color control confirmed on a `MELK-OC21WCT31` strip
 - Homebridge UI config schema
 - BLE discovery with log snippets and optional auto-add
-- Serialized BLE writes with timeout, retry/backoff, reconnect, and optional keep-alive
+- Serialized BLE writes with timeout, retry/backoff, background recovery search, reconnect, and optional keep-alive
 - Command-builder tests for the known Magic Lantern frames
 - Package smoke tests against Homebridge 1 and 2 across supported Node.js LTS versions in CI
 
@@ -51,17 +51,33 @@ sudo hb-service link
 
 ## Homebridge UI Setup
 
-LanternIC supports Homebridge UI through `config.schema.json`.
+LanternIC can be set up from Homebridge UI without editing raw JSON.
+
+### Option 1: Auto-Add
 
 1. Install the plugin.
 2. Open Homebridge UI.
 3. Go to Plugins, select LanternIC, then Settings.
 4. Leave `Scan For Light Strips On Startup` enabled.
-5. Restart Homebridge and open the logs.
-6. Copy the `LanternIC device config: {...}` line for your strip into `Configured Light Strips`.
-7. Save and restart Homebridge again.
+5. Turn on `Automatically Add Discovered Strips`.
+6. Save and restart Homebridge.
+7. Open the logs and confirm LanternIC found the right strip.
 
-Most setups only need a strip name and Bluetooth address. Use `Show Advanced Settings` only for Bluetooth adapter options, discovery filters, or protocol fallback tuning.
+Auto-add is easiest when you are near the strip and there are not many similar BLE lights nearby. Turn it back off after setup if nearby BLE devices are noisy.
+
+### Option 2: Manual Add
+
+1. Leave `Scan For Light Strips On Startup` enabled.
+2. Save and restart Homebridge.
+3. Open the logs and look for `Discovered BLE candidate`.
+4. Copy the candidate address, for example `BE:16:70:00:08:2A`.
+5. In LanternIC settings, click `Add Light Strip`.
+6. Enter a friendly name and the Bluetooth address.
+7. Save and restart Homebridge.
+
+The `LanternIC device config: {...}` log line is only a shortcut for people using Homebridge's JSON editor. In the normal settings UI, you only need the strip name and address.
+
+Use `Show Advanced Settings` only for Bluetooth adapter options, discovery filters, or protocol fallback tuning.
 
 You can also use the local scanner:
 
@@ -141,9 +157,9 @@ DisablePlugins=pnat
 
 If Linux discovery works from the CLI but Homebridge cannot connect, run the `setcap` command against the exact Node binary used by `hb-service`, then restart Homebridge. If `keepConnected` is enabled, expect the Magic Lantern iPhone app to fail or hang while Homebridge owns the BLE connection.
 
-## Homebridge Config
+## Manual JSON Config
 
-Start with discovery enabled and no devices:
+Most users should use the Homebridge UI instead. If you prefer editing `config.json`, start with discovery enabled and no devices:
 
 ```json
 {
@@ -158,7 +174,7 @@ Start with discovery enabled and no devices:
 }
 ```
 
-Restart Homebridge and look for candidate device addresses in the logs. Then add your strip:
+Restart Homebridge and look for candidate device addresses in the logs. Then add a strip with just a name and address:
 
 ```json
 {
@@ -167,34 +183,22 @@ Restart Homebridge and look for candidate device addresses in the logs. Then add
   "devices": [
     {
       "name": "TV Strip",
-      "address": "BE:16:70:00:08:2A",
-      "showAdvanced": false,
-      "model": "Magic Lantern RGBIC",
-      "colorOrder": "rgb",
-      "powerMode": "both",
-      "brightnessMode": "rgb"
+      "address": "BE:16:70:00:08:2A"
     }
   ],
   "discovery": {
-    "enabled": true,
-    "autoAdd": false,
-    "showAdvanced": false,
-    "scanSeconds": 20,
-    "minRssi": -95,
-    "namePrefixes": [
-      "MELK",
-      "Triones",
-      "ELK-BLEDOM",
-      "LED",
-      "OA"
-    ],
-    "serviceUuids": [
-      "fff0"
-    ]
-  },
+    "enabled": true
+  }
+}
+```
+
+Add advanced fields only if you need them. Common examples:
+
+```json
+{
   "ble": {
-    "writeMode": "withoutResponse",
-    "keepConnected": true
+    "keepConnected": true,
+    "writeMode": "withoutResponse"
   }
 }
 ```
@@ -212,7 +216,10 @@ Since each strip is different, you may need to configure your settings different
 8. If brightness does not change, keep `brightnessMode` as `rgb`; if it double-dims, try `native`.
 
 ## Reconnect
-If automatic reconnect fails, power cycle the strip. If it flashes, you're reconnected.
+
+Each HomeKit command already scans for the strip if Homebridge is not connected. If a command times out or the strip disconnects during a write, LanternIC starts a background recovery search and resends the cached desired HomeKit state after reconnecting.
+
+If automatic reconnect still fails, power cycle the strip. If it flashes, you're reconnected.
 
 ## Protocol Notes
 
@@ -258,8 +265,8 @@ The command builders are isolated so we can add variants if your strip uses a sl
 
 - All BLE operations are serialized through a single manager queue.
 - Every characteristic write has a timeout and is retried with exponential backoff.
-- Failed writes force a disconnect and rediscovery.
-- Desired HomeKit state is cached and resent after a background reconnect when `keepConnected` is enabled.
+- Failed writes force a disconnect, rediscovery, and a background recovery search.
+- Desired HomeKit state is cached and resent after a background reconnect.
 - Connections are closed after an idle timeout by default, so the Magic Lantern app or another controller is less likely to be locked out forever.
 - Set `ble.keepConnected` to `true` for the most reliable HomeKit behavior. This keeps Homebridge attached to the strip and automatically reconnects after drops, but the Magic Lantern app may not be able to connect until Homebridge releases the device.
 
