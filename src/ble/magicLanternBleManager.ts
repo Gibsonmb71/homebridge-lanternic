@@ -270,7 +270,7 @@ export class MagicLanternBleClient {
           await this.disconnect(false);
 
           if (attempt >= this.manager.options.retryAttempts) {
-            this.scheduleReconnect();
+            this.scheduleRecoveryReconnect();
             throw error;
           }
 
@@ -420,8 +420,18 @@ export class MagicLanternBleClient {
   }
 
   private scheduleReconnect(delayMs = this.reconnectDelayMs): void {
-    if (!this.manager.options.keepConnected || this.reconnectTimer) {
-      return;
+    this.scheduleReconnectLoop(delayMs, this.manager.options.keepConnected);
+  }
+
+  private scheduleRecoveryReconnect(): void {
+    if (this.scheduleReconnectLoop(this.manager.options.reconnectDelayMs, true)) {
+      this.log.debug(`[${this.device.name}] Scheduled background BLE recovery scan after failed write`);
+    }
+  }
+
+  private scheduleReconnectLoop(delayMs: number, enabled: boolean): boolean {
+    if (!enabled || this.reconnectTimer) {
+      return false;
     }
 
     this.reconnectTimer = setTimeout(() => {
@@ -433,6 +443,7 @@ export class MagicLanternBleClient {
           this.log.debug(`[${this.device.name}] BLE reconnect complete`);
           this.reconnectDelayMs = this.manager.options.reconnectDelayMs;
           this.emitReconnect();
+          this.scheduleIdleDisconnect();
         } catch (error) {
           this.log.debug(
             `[${this.device.name}] BLE reconnect failed:`,
@@ -442,10 +453,12 @@ export class MagicLanternBleClient {
             this.manager.options.maxReconnectDelayMs,
             Math.max(this.manager.options.reconnectDelayMs, this.reconnectDelayMs * 2),
           );
-          this.scheduleReconnect();
+          this.scheduleReconnectLoop(this.reconnectDelayMs, enabled);
         }
       });
     }, delayMs);
+
+    return true;
   }
 
   private clearReconnectTimer(): void {

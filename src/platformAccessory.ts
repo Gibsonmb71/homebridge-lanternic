@@ -208,12 +208,10 @@ export class LanternIcPlatformAccessory {
   }
 
   private async resyncAfterReconnect(): Promise<void> {
-    if (!this.state.on) {
-      return;
-    }
-
     this.platform.log.debug(`[${this.device.name}] Resyncing desired state after BLE reconnect`);
-    await this.client.writeCommands(this.buildPowerOnCommands());
+    await this.client.writeCommands(
+      this.state.on ? this.buildPowerOnCommands() : buildPowerOffCommands(this.powerMode()),
+    );
   }
 
   private saveState(): void {
