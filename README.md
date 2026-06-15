@@ -219,8 +219,6 @@ Since each strip is different, you may need to configure your settings different
 
 Each HomeKit command already scans for the strip if Homebridge is not connected. If a command times out or the strip disconnects during a write, LanternIC starts a background recovery search and resends the cached desired HomeKit state after reconnecting.
 
-If automatic reconnect still fails, power cycle the strip. If it flashes, you're reconnected.
-
 ## Protocol Notes
 
 Known Magic Lantern BLE writes go to:
