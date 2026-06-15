@@ -219,7 +219,7 @@ Since each strip is different, you may need to configure your settings different
 
 Each HomeKit command already scans for the strip if Homebridge is not connected. If a command times out or the strip disconnects during a write, LanternIC starts a background recovery search and resends the cached desired HomeKit state after reconnecting.
 
-If automatic reconnect still fails, power cycle the strip. If it flashes, you're reconnected.
+LanternIC does not intentionally flash the strip as a reconnect indicator. If automatic reconnect still fails, power cycle the strip, then wait for LanternIC to find it again and resend the cached HomeKit state.
 
 ## Protocol Notes
 
