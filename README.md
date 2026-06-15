@@ -20,10 +20,8 @@ These unbranded Magic Lantern BLE strips ship with multiple firmware variants so
 - Homebridge UI config schema
 - BLE discovery with log snippets and optional auto-add
 - Serialized BLE writes with timeout, retry/backoff, background recovery search, reconnect, and optional keep-alive
-- Command-builder tests for the known Magic Lantern frames
-- Package smoke tests against Homebridge 1 and 2 across supported Node.js LTS versions in CI
 
-Effects and segment control are not supported as there is no good way to expose them in Apple Home.
+Effects and segment control are not supported as there is no good way to expose them in Apple Home (that i've found)
 
 ## Install
 
@@ -63,7 +61,7 @@ LanternIC can be set up from Homebridge UI without editing raw JSON.
 6. Save and restart Homebridge.
 7. Open the logs and confirm LanternIC found the right strip.
 
-Auto-add is easiest when you are near the strip and there are not many similar BLE lights nearby. Turn it back off after setup if nearby BLE devices are noisy.
+If you're in a crowded environment, I would keep auto-add off to avoid interferring with nearby devices.
 
 ### Option 2: Manual Add
 
@@ -92,6 +90,7 @@ LANTERNIC_MIN_RSSI=-75 lanternic-scan
 LANTERNIC_SCAN_SECONDS=45 lanternic-scan
 LANTERNIC_SCAN_ALL=1 lanternic-scan
 ```
+...or just use bluetoothctl (it doesn't matter)
 
 When working from this repository instead of a global install, use `npm run scan` in place of `lanternic-scan`.
 
@@ -99,7 +98,7 @@ When working from this repository instead of a global install, use `npm run scan
 
 ## CLI Tools
 
-LanternIC ships a few BLE helpers for setup and firmware troubleshooting:
+LanternIC has a few BLE helpers for setup and firmware troubleshooting:
 
 ```sh
 lanternic-scan
@@ -192,7 +191,7 @@ Restart Homebridge and look for candidate device addresses in the logs. Then add
 }
 ```
 
-Add advanced fields only if you need them. Common examples:
+Add advanced fields only if you need them. for example:
 
 ```json
 {
@@ -210,16 +209,16 @@ Since each strip is different, you may need to configure your settings different
 2. Fully quit the Magic Lantern app before testing Homebridge. BLE devices usually allow only one active central connection.
 3. Start Homebridge in debug mode and confirm the plugin logs your strip during discovery.
 4. Add the address to config and restart.
-5. Test in this order: On, Off, Brightness 10/50/100, Red, Green, Blue, White-ish.
-6. If colors are swapped, change `colorOrder`.
-7. If Off leaves the strip visibly on, keep `powerMode` as `both` or try `rgbBlack`.
-8. If brightness does not change, keep `brightnessMode` as `rgb`; if it double-dims, try `native`.
+5. Test in this order: On, Off, Brightness 10/50/100, Red, Green, Blue, White
+7. If colors are swapped, change `colorOrder`.
+8. If Off leaves the strip visibly on, keep `powerMode` as `both` or try `rgbBlack`.
+9. If brightness does not change, keep `brightnessMode` as `rgb`; if it double-dims, try `native`.
 
 ## Reconnect
 
 Each HomeKit command already scans for the strip if Homebridge is not connected. If a command times out or the strip disconnects during a write, LanternIC starts a background recovery search and resends the cached desired HomeKit state after reconnecting.
 
-## Protocol Notes
+## Protocol Notes (so far)
 
 Known Magic Lantern BLE writes go to:
 
@@ -241,7 +240,7 @@ The core frames available here are:
 - Effect speed: `7e0402xxffffff00ef`, where `xx` is 0-100 decimal encoded as one byte
 - Basic effect: `7e0503xx06ffff00ef`
 
-> These Magic Lantern BLE frame notes are based on packet-captures from [@kassabov](https://github.com/kassabov) in Home Assistant Core issue [#145934](https://github.com/home-assistant/core/issues/145934). (thanks!)
+> These Magic Lantern BLE frame notes are based on some packet-captures from [@kassabov](https://github.com/kassabov) in Home Assistant Core issue [#145934](https://github.com/home-assistant/core/issues/145934). (thanks!)
 
 - Home Assistant Core issue: <https://github.com/home-assistant/core/issues/145934>
 - Home Assistant community thread: <https://community.home-assistant.io/t/new-integration-for-ble-magic-lantern/454055>
@@ -265,10 +264,10 @@ The command builders are isolated so we can add variants if your strip uses a sl
 - Every characteristic write has a timeout and is retried with exponential backoff.
 - Failed writes force a disconnect, rediscovery, and a background recovery search.
 - Desired HomeKit state is cached and resent after a background reconnect.
-- Connections are closed after an idle timeout by default, so the Magic Lantern app or another controller is less likely to be locked out forever.
+- Connections are closed after an idle timeout by default, so the Magic Lantern app or another controller is less likely to be locked out forever. (unless you attempt to control the device again)
 - Set `ble.keepConnected` to `true` for the most reliable HomeKit behavior. This keeps Homebridge attached to the strip and automatically reconnects after drops, but the Magic Lantern app may not be able to connect until Homebridge releases the device.
 
-Useful reliability settings:
+Default settings:
 
 ```json
 {
