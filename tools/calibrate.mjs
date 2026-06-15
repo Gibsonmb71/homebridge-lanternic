@@ -282,8 +282,9 @@ async function handleApi(request, response) {
 
     json(response, 404, { error: 'Not found' });
   } catch (error) {
+    console.error('API request failed:', error);
     json(response, 500, {
-      error: error instanceof Error ? error.message : String(error),
+      error: 'Internal server error',
     });
   }
 }
