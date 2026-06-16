@@ -1,7 +1,7 @@
 import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
 
 import { applyColorOrder, clampPercent, hsbToRgb } from './color.js';
-import type { MagicLanternBleClient } from './ble/magicLanternBleManager.js';
+import type { LanternBleClient } from './ble/lanternBleTransport.js';
 import {
   buildColorCommand,
   buildNativeBrightnessCommands,
@@ -23,7 +23,7 @@ export class LanternIcPlatformAccessory {
   private static readonly writeFailureLogWindowMs = 60_000;
 
   private readonly device: LanternIcDeviceConfig;
-  private readonly client: MagicLanternBleClient;
+  private readonly client: LanternBleClient;
   private readonly accessory: PlatformAccessory<LanternIcAccessoryContext>;
   private readonly service: Service;
   private readonly state: LightState;
