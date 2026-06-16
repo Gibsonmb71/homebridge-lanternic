@@ -54,6 +54,8 @@
     "send": "tsx tools/send.ts",
     "send-sequence": "tsx tools/send-sequence.ts",
     "smoke:package": "tsx scripts/smoke-package.ts",
+    "swift:build": "swift build --package-path swift/LanternICDaemon",
+    "swift:test": "swift test --package-path swift/LanternICDaemon",
     "test": "rimraf ./.test-dist && tsc -p tsconfig.test.json && tsx scripts/run-tests.ts",
     "watch": "tsc --watch",
     "prepack": "npm run build",
