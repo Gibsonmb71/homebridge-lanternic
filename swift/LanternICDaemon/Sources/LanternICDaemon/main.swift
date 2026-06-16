@@ -55,14 +55,15 @@ struct LanternICDaemon {
 
     do {
       let data = try encoder.encode(response)
-      if let line = String(data: data, encoding: .utf8) {
-        print(line)
-        fflush(stdout)
-      }
+      writeLine(data)
     } catch {
-      print("{\"ok\":false,\"event\":\"encodeFailed\",\"message\":\"Could not encode daemon response\"}")
-      fflush(stdout)
+      writeLine(Data(#"{"ok":false,"event":"encodeFailed","message":"Could not encode daemon response"}"#.utf8))
     }
+  }
+
+  private static func writeLine(_ data: Data) {
+    FileHandle.standardOutput.write(data)
+    FileHandle.standardOutput.write(Data("\n".utf8))
   }
 
   private static func printHelp() {
