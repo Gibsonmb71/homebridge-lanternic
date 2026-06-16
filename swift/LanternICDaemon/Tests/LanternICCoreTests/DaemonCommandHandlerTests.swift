@@ -1,16 +1,19 @@
-import XCTest
+import Testing
 @testable import LanternICCore
 
-final class DaemonCommandHandlerTests: XCTestCase {
-  func testPingResponse() {
+@Suite("Daemon command handler")
+struct DaemonCommandHandlerTests {
+  @Test("Ping returns pong")
+  func pingResponse() {
     let response = DaemonCommandHandler.handle(DaemonRequest(id: "1", cmd: "ping"))
 
-    XCTAssertEqual(response.id, "1")
-    XCTAssertTrue(response.ok)
-    XCTAssertEqual(response.event, "pong")
+    #expect(response.id == "1")
+    #expect(response.ok == true)
+    #expect(response.event == "pong")
   }
 
-  func testBuildColorResponse() {
+  @Test("Build color returns expected frame")
+  func buildColorResponse() {
     let response = DaemonCommandHandler.handle(
       DaemonRequest(
         id: "color-1",
@@ -21,17 +24,18 @@ final class DaemonCommandHandlerTests: XCTestCase {
       )
     )
 
-    XCTAssertEqual(response.id, "color-1")
-    XCTAssertTrue(response.ok)
-    XCTAssertEqual(response.event, "frame")
-    XCTAssertEqual(response.frame, "7e070503ff782810ef")
+    #expect(response.id == "color-1")
+    #expect(response.ok == true)
+    #expect(response.event == "frame")
+    #expect(response.frame == "7e070503ff782810ef")
   }
 
-  func testBluetoothCommandsArePlaceholders() {
+  @Test("Bluetooth commands are placeholders")
+  func bluetoothCommandsArePlaceholders() {
     let response = DaemonCommandHandler.handle(DaemonRequest(id: "scan-1", cmd: "scan"))
 
-    XCTAssertEqual(response.id, "scan-1")
-    XCTAssertFalse(response.ok)
-    XCTAssertEqual(response.event, "notImplemented")
+    #expect(response.id == "scan-1")
+    #expect(response.ok == false)
+    #expect(response.event == "notImplemented")
   }
 }
