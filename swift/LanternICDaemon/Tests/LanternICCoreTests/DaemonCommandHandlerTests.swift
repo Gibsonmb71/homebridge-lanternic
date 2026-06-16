@@ -30,15 +30,6 @@ struct DaemonCommandHandlerTests {
     #expect(response.frame == "7e070503ff782810ef")
   }
 
-  @Test("Bluetooth commands are placeholders in sync handler")
-  func bluetoothCommandsArePlaceholders() {
-    let response = DaemonCommandHandler.handle(DaemonRequest(id: "scan-1", cmd: "scan"))
-
-    #expect(response.id == "scan-1")
-    #expect(response.ok == false)
-    #expect(response.event == "notImplemented")
-  }
-
   @Test("Async scan returns transport candidates")
   func asyncScanResponse() async {
     let response = await DaemonCommandHandler.handle(
