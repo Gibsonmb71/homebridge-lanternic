@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { withTimeout } from '../util/async.js';
+import type { CandidateDevice } from '../ble/lanternBleTransport.js';
 
 export interface SwiftDaemonRequest {
   id?: string;
@@ -18,6 +19,13 @@ export interface SwiftDaemonRequest {
   brightness?: number;
   speed?: number;
   effectCode?: number;
+  timeoutMs?: number;
+  namePrefixes?: string[];
+  serviceUuids?: string[];
+  minRssi?: number;
+  serviceUuid?: string;
+  characteristicUuid?: string;
+  writeWithoutResponse?: boolean;
 }
 
 export interface SwiftDaemonResponse {
@@ -27,6 +35,8 @@ export interface SwiftDaemonResponse {
   message?: string;
   frame?: string;
   frames?: string[];
+  candidates?: CandidateDevice[];
+  backend?: string;
 }
 
 export interface SwiftDaemonClientOptions {
