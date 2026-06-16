@@ -7,7 +7,9 @@ import type {
   Service,
 } from 'homebridge';
 
-import { MagicLanternBleManager, type CandidateDevice } from './ble/magicLanternBleManager.js';
+import type { CandidateDevice, LanternBleManager } from './ble/lanternBleTransport.js';
+import { MagicLanternBleManager } from './ble/magicLanternBleManager.js';
+import { SwiftLanternBleManager } from './ble/swiftLanternBleManager.js';
 import { LanternIcPlatformAccessory } from './platformAccessory.js';
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 import type { LanternIcAccessoryContext, LanternIcDeviceConfig, LanternIcPlatformConfig } from './types.js';
@@ -16,7 +18,7 @@ import { formatBluetoothAddress, normalizeBluetoothId } from './util/bluetooth.j
 export class LanternIcPlatform implements DynamicPlatformPlugin {
   public readonly Service: typeof Service;
   public readonly Characteristic: typeof Characteristic;
-  public readonly ble: MagicLanternBleManager;
+  public readonly ble: LanternBleManager;
 
   private readonly accessories = new Map<string, PlatformAccessory<LanternIcAccessoryContext>>();
 
@@ -27,7 +29,7 @@ export class LanternIcPlatform implements DynamicPlatformPlugin {
   ) {
     this.Service = api.hap.Service;
     this.Characteristic = api.hap.Characteristic;
-    this.ble = new MagicLanternBleManager(log, config.ble);
+    this.ble = this.createBleManager();
 
     this.api.on('didFinishLaunching', () => {
       this.log.debug('LanternIC didFinishLaunching');
@@ -43,6 +45,15 @@ export class LanternIcPlatform implements DynamicPlatformPlugin {
   configureAccessory(accessory: PlatformAccessory<LanternIcAccessoryContext>): void {
     this.log.info('Loading accessory from cache:', accessory.displayName);
     this.accessories.set(accessory.UUID, accessory);
+  }
+
+  private createBleManager(): LanternBleManager {
+    if (this.config.ble?.backend === 'swift') {
+      this.log.warn('Using experimental LanternIC Swift BLE backend. Bluetooth scan/write commands are not implemented yet.');
+      return new SwiftLanternBleManager(this.log, this.config.ble);
+    }
+
+    return new MagicLanternBleManager(this.log, this.config.ble);
   }
 
   private async setupAccessories(): Promise<void> {
