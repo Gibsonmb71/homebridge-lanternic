@@ -2,7 +2,12 @@ import type { Logging } from 'homebridge';
 
 import type { LanternIcBleConfig, LanternIcDeviceConfig } from '../types.js';
 import { delay, withTimeout } from '../util/async.js';
+import { normalizeUuid } from '../util/bluetooth.js';
 import { SwiftDaemonClient } from '../native/swiftDaemon.js';
+import {
+  MAGIC_LANTERN_DEFAULT_CHARACTERISTIC_UUID,
+  MAGIC_LANTERN_DEFAULT_SERVICE_UUID,
+} from './magicLanternCommands.js';
 import type {
   CandidateDevice,
   LanternBleClient,
@@ -11,6 +16,8 @@ import type {
 } from './lanternBleTransport.js';
 
 export interface SwiftLanternBleOptions {
+  serviceUuid: string;
+  characteristicUuid: string;
   connectTimeoutMs: number;
   scanTimeoutMs: number;
   writeTimeoutMs: number;
@@ -34,6 +41,8 @@ export class SwiftLanternBleManager implements LanternBleManager {
     config: LanternIcBleConfig | undefined,
   ) {
     this.options = {
+      serviceUuid: normalizeUuid(config?.serviceUuid ?? MAGIC_LANTERN_DEFAULT_SERVICE_UUID),
+      characteristicUuid: normalizeUuid(config?.characteristicUuid ?? MAGIC_LANTERN_DEFAULT_CHARACTERISTIC_UUID),
       connectTimeoutMs: config?.connectTimeoutMs ?? 15_000,
       scanTimeoutMs: config?.scanTimeoutMs ?? 15_000,
       writeTimeoutMs: config?.writeTimeoutMs ?? 5_000,
@@ -51,9 +60,16 @@ export class SwiftLanternBleManager implements LanternBleManager {
     return new SwiftLanternBleClient(this.log, this, device);
   }
 
-  async discoverCandidates(_timeoutMs: number, _options: MagicLanternDiscoveryOptions): Promise<CandidateDevice[]> {
-    await this.daemon.request({ cmd: 'scan' });
-    return [];
+  async discoverCandidates(timeoutMs: number, options: MagicLanternDiscoveryOptions): Promise<CandidateDevice[]> {
+    const response = await this.daemon.request({
+      cmd: 'scan',
+      timeoutMs,
+      namePrefixes: options.namePrefixes,
+      serviceUuids: options.serviceUuids,
+      minRssi: options.minRssi,
+    });
+
+    return response.candidates ?? [];
   }
 
   async writeFrames(device: LanternIcDeviceConfig, commands: Buffer[]): Promise<void> {
@@ -61,6 +77,9 @@ export class SwiftLanternBleManager implements LanternBleManager {
       await this.daemon.request({
         cmd: 'write',
         device: device.address,
+        serviceUuid: this.options.serviceUuid,
+        characteristicUuid: this.options.characteristicUuid,
+        writeWithoutResponse: true,
         frames: commands.map(command => command.toString('hex')),
       });
     });
