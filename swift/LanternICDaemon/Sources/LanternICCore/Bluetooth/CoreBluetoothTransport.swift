@@ -31,12 +31,10 @@ public final class CoreBluetoothTransport: NSObject, BluetoothTransport, @unchec
         self.scanCandidates = [:]
         self.scanOptions = options
 
-        let serviceUUIDs = options.serviceUUIDs.isEmpty
-          ? nil
-          : options.serviceUUIDs.map { CBUUID(string: $0) }
-
+        // Scan broadly and filter in didDiscover. Many Magic Lantern strips use fff0/fff3
+        // after connecting but do not reliably advertise fff0 in the BLE advertisement.
         self.central.scanForPeripherals(
-          withServices: serviceUUIDs,
+          withServices: nil,
           options: [CBCentralManagerScanOptionAllowDuplicatesKey: true]
         )
 
@@ -72,7 +70,9 @@ public final class CoreBluetoothTransport: NSObject, BluetoothTransport, @unchec
 
   private func finishScan() {
     central.stopScan()
-    let candidates = Array(scanCandidates.values)
+    let candidates = Array(scanCandidates.values).sorted { left, right in
+      (left.rssi ?? -127) > (right.rssi ?? -127)
+    }
     scanCandidates = [:]
     scanOptions = nil
     let continuation = scanContinuation
