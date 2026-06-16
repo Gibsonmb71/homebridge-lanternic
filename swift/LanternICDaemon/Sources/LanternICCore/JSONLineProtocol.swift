@@ -99,12 +99,7 @@ public enum DaemonCommandHandler {
   public static func handle(_ request: DaemonRequest) -> DaemonResponse {
     switch request.cmd {
     case "ping":
-      return DaemonResponse(
-        id: request.id,
-        ok: true,
-        event: "pong",
-        message: "LanternIC Swift daemon is running"
-      )
+      return DaemonResponse(id: request.id, ok: true, event: "pong", message: "LanternIC Swift daemon is running")
 
     case "capabilities":
       return DaemonResponse(
@@ -127,67 +122,37 @@ public enum DaemonCommandHandler {
       guard let value = request.value else {
         return missingValue(request, "value")
       }
-
-      return frameResponse(
-        request,
-        MagicLanternCommands.power(value)
-      )
+      return frameResponse(request, MagicLanternCommands.power(value))
 
     case "buildColor":
       guard let red = request.red, let green = request.green, let blue = request.blue else {
         return missingValue(request, "red, green, and blue")
       }
-
-      return frameResponse(
-        request,
-        MagicLanternCommands.color(red: red, green: green, blue: blue)
-      )
+      return frameResponse(request, MagicLanternCommands.color(red: red, green: green, blue: blue))
 
     case "buildBrightness":
       guard let brightness = request.brightness else {
         return missingValue(request, "brightness")
       }
-
-      return frameResponse(
-        request,
-        MagicLanternCommands.brightness(brightness)
-      )
+      return frameResponse(request, MagicLanternCommands.brightness(brightness))
 
     case "buildEffectSpeed":
       guard let speed = request.speed else {
         return missingValue(request, "speed")
       }
-
-      return frameResponse(
-        request,
-        MagicLanternCommands.effectSpeed(speed)
-      )
+      return frameResponse(request, MagicLanternCommands.effectSpeed(speed))
 
     case "buildBasicEffect":
       guard let effectCode = request.effectCode else {
         return missingValue(request, "effectCode")
       }
-
-      return frameResponse(
-        request,
-        MagicLanternCommands.basicEffect(effectCode)
-      )
+      return frameResponse(request, MagicLanternCommands.basicEffect(effectCode))
 
     case "scan", "write", "connect", "disconnect":
-      return DaemonResponse(
-        id: request.id,
-        ok: false,
-        event: "notImplemented",
-        message: "Call the async handler with a Bluetooth transport for native Bluetooth commands."
-      )
+      return blockingBluetoothResponse(request)
 
     default:
-      return DaemonResponse(
-        id: request.id,
-        ok: false,
-        event: "unknownCommand",
-        message: "Unknown command: \(request.cmd)"
-      )
+      return DaemonResponse(id: request.id, ok: false, event: "unknownCommand", message: "Unknown command: \(request.cmd)")
     }
   }
 
@@ -203,14 +168,7 @@ public enum DaemonCommandHandler {
             minRSSI: request.minRssi
           )
         )
-
-        return DaemonResponse(
-          id: request.id,
-          ok: true,
-          event: "scanResult",
-          candidates: candidates,
-          backend: transport.name
-        )
+        return DaemonResponse(id: request.id, ok: true, event: "scanResult", candidates: candidates, backend: transport.name)
       } catch {
         return errorResponse(request, event: "scanFailed", error: error, backend: transport.name)
       }
@@ -237,13 +195,7 @@ public enum DaemonCommandHandler {
             writeWithoutResponse: request.writeWithoutResponse ?? true
           )
         )
-
-        return DaemonResponse(
-          id: request.id,
-          ok: true,
-          event: "writeComplete",
-          backend: transport.name
-        )
+        return DaemonResponse(id: request.id, ok: true, event: "writeComplete", backend: transport.name)
       } catch {
         return errorResponse(request, event: "writeFailed", error: error, backend: transport.name)
       }
@@ -253,36 +205,29 @@ public enum DaemonCommandHandler {
     }
   }
 
+  private static func blockingBluetoothResponse(_ request: DaemonRequest) -> DaemonResponse {
+    let transport = BluetoothTransportFactory.makeDefaultTransport()
+    let semaphore = DispatchSemaphore(value: 0)
+    var response: DaemonResponse?
+
+    Task {
+      response = await handle(request, transport: transport)
+      semaphore.signal()
+    }
+
+    semaphore.wait()
+    return response ?? DaemonResponse(id: request.id, ok: false, event: "transportFailed", message: "Bluetooth transport did not return a response", backend: transport.name)
+  }
+
   private static func frameResponse(_ request: DaemonRequest, _ bytes: [UInt8]) -> DaemonResponse {
-    DaemonResponse(
-      id: request.id,
-      ok: true,
-      event: "frame",
-      frame: MagicLanternCommands.hexString(for: bytes)
-    )
+    DaemonResponse(id: request.id, ok: true, event: "frame", frame: MagicLanternCommands.hexString(for: bytes))
   }
 
   private static func missingValue(_ request: DaemonRequest, _ name: String) -> DaemonResponse {
-    DaemonResponse(
-      id: request.id,
-      ok: false,
-      event: "invalidRequest",
-      message: "Missing required field: \(name)"
-    )
+    DaemonResponse(id: request.id, ok: false, event: "invalidRequest", message: "Missing required field: \(name)")
   }
 
-  private static func errorResponse(
-    _ request: DaemonRequest,
-    event: String,
-    error: Error,
-    backend: String
-  ) -> DaemonResponse {
-    DaemonResponse(
-      id: request.id,
-      ok: false,
-      event: event,
-      message: String(describing: error),
-      backend: backend
-    )
+  private static func errorResponse(_ request: DaemonRequest, event: String, error: Error, backend: String) -> DaemonResponse {
+    DaemonResponse(id: request.id, ok: false, event: event, message: String(describing: error), backend: backend)
   }
 }
