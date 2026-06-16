@@ -4,19 +4,11 @@ import { withBindings, type HciBindingsOptions } from '@stoprocent/noble';
 import type { HciDriver, LanternIcBleConfig, LanternIcDeviceConfig, NobleBinding, WriteMode } from '../types.js';
 import { delay, withTimeout } from '../util/async.js';
 import { formatBluetoothAddress, normalizeBluetoothId, normalizeUuid } from '../util/bluetooth.js';
-import type {
-  CandidateDevice,
-  LanternBleClient,
-  LanternBleManager,
-  MagicLanternDiscoveryOptions,
-} from './lanternBleTransport.js';
 import {
   MAGIC_LANTERN_DEFAULT_CHARACTERISTIC_UUID,
   MAGIC_LANTERN_DEFAULT_SERVICE_UUID,
 } from './magicLanternCommands.js';
 import type { NobleAdapter, NobleCharacteristic, NoblePeripheral } from './nobleTypes.js';
-
-export type { CandidateDevice, MagicLanternDiscoveryOptions } from './lanternBleTransport.js';
 
 export interface MagicLanternBleOptions {
   binding: NobleBinding;
@@ -40,7 +32,23 @@ export interface MagicLanternBleOptions {
   writeMode: WriteMode;
 }
 
-export class MagicLanternBleManager implements LanternBleManager {
+export interface CandidateDevice {
+  id: string;
+  address?: string;
+  connectable?: boolean;
+  manufacturerData?: string;
+  name: string;
+  rssi?: number;
+  serviceUuids: string[];
+}
+
+export interface MagicLanternDiscoveryOptions {
+  namePrefixes: string[];
+  serviceUuids: string[];
+  minRssi?: number;
+}
+
+export class MagicLanternBleManager {
   readonly options: MagicLanternBleOptions;
 
   private readonly noble: NobleAdapter;
@@ -208,7 +216,7 @@ export class MagicLanternBleManager implements LanternBleManager {
   }
 }
 
-export class MagicLanternBleClient implements LanternBleClient {
+export class MagicLanternBleClient {
   private peripheral?: NoblePeripheral;
   private characteristic?: NobleCharacteristic;
   private idleTimer?: ReturnType<typeof setTimeout>;

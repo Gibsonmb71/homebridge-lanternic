@@ -261,26 +261,6 @@
           "functionBody": "return model.showAdvanced === true;"
         },
         "properties": {
-          "backend": {
-            "title": "Bluetooth Backend",
-            "type": "string",
-            "default": "noble",
-            "description": "Experimental. Leave on Noble unless you are testing the Swift daemon branch.",
-            "oneOf": [
-              {
-                "title": "Noble",
-                "enum": [
-                  "noble"
-                ]
-              },
-              {
-                "title": "Swift Daemon Experimental",
-                "enum": [
-                  "swift"
-                ]
-              }
-            ]
-          },
           "binding": {
             "title": "Noble Binding",
             "type": "string",

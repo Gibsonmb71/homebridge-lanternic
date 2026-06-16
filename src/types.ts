@@ -12,8 +12,6 @@ export type HciDriver = 'default' | 'native' | 'usb' | 'uart';
 
 export type WriteMode = 'auto' | 'withResponse' | 'withoutResponse';
 
-export type BleBackend = 'noble' | 'swift';
-
 export interface LanternIcDeviceConfig {
   name: string;
   address: string;
@@ -36,7 +34,6 @@ export interface LanternIcDiscoveryConfig {
 }
 
 export interface LanternIcBleConfig {
-  backend?: BleBackend;
   binding?: NobleBinding;
   hciDriver?: HciDriver;
   hciDeviceId?: number;
