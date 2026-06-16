@@ -13,6 +13,13 @@ public struct DaemonRequest: Codable, Equatable {
   public var brightness: Int?
   public var speed: Int?
   public var effectCode: Int?
+  public var timeoutMs: Int?
+  public var namePrefixes: [String]?
+  public var serviceUuids: [String]?
+  public var minRssi: Int?
+  public var serviceUuid: String?
+  public var characteristicUuid: String?
+  public var writeWithoutResponse: Bool?
 
   public init(
     id: String? = nil,
@@ -26,7 +33,14 @@ public struct DaemonRequest: Codable, Equatable {
     blue: Int? = nil,
     brightness: Int? = nil,
     speed: Int? = nil,
-    effectCode: Int? = nil
+    effectCode: Int? = nil,
+    timeoutMs: Int? = nil,
+    namePrefixes: [String]? = nil,
+    serviceUuids: [String]? = nil,
+    minRssi: Int? = nil,
+    serviceUuid: String? = nil,
+    characteristicUuid: String? = nil,
+    writeWithoutResponse: Bool? = nil
   ) {
     self.id = id
     self.cmd = cmd
@@ -40,6 +54,13 @@ public struct DaemonRequest: Codable, Equatable {
     self.brightness = brightness
     self.speed = speed
     self.effectCode = effectCode
+    self.timeoutMs = timeoutMs
+    self.namePrefixes = namePrefixes
+    self.serviceUuids = serviceUuids
+    self.minRssi = minRssi
+    self.serviceUuid = serviceUuid
+    self.characteristicUuid = characteristicUuid
+    self.writeWithoutResponse = writeWithoutResponse
   }
 }
 
@@ -50,6 +71,8 @@ public struct DaemonResponse: Codable, Equatable {
   public var message: String?
   public var frame: String?
   public var frames: [String]?
+  public var candidates: [BluetoothCandidate]?
+  public var backend: String?
 
   public init(
     id: String? = nil,
@@ -57,7 +80,9 @@ public struct DaemonResponse: Codable, Equatable {
     event: String? = nil,
     message: String? = nil,
     frame: String? = nil,
-    frames: [String]? = nil
+    frames: [String]? = nil,
+    candidates: [BluetoothCandidate]? = nil,
+    backend: String? = nil
   ) {
     self.id = id
     self.ok = ok
@@ -65,6 +90,8 @@ public struct DaemonResponse: Codable, Equatable {
     self.message = message
     self.frame = frame
     self.frames = frames
+    self.candidates = candidates
+    self.backend = backend
   }
 }
 
@@ -84,13 +111,15 @@ public enum DaemonCommandHandler {
         id: request.id,
         ok: true,
         event: "capabilities",
-        message: "frame-builders; bluetooth-transport-pending",
+        message: "frame-builders; native-bluetooth-transport",
         frames: [
           "buildPower",
           "buildColor",
           "buildBrightness",
           "buildEffectSpeed",
-          "buildBasicEffect"
+          "buildBasicEffect",
+          "scan",
+          "write"
         ]
       )
 
@@ -149,7 +178,7 @@ public enum DaemonCommandHandler {
         id: request.id,
         ok: false,
         event: "notImplemented",
-        message: "Bluetooth transport is not implemented yet. This scaffold only builds Magic Lantern frames."
+        message: "Call the async handler with a Bluetooth transport for native Bluetooth commands."
       )
 
     default:
@@ -159,6 +188,68 @@ public enum DaemonCommandHandler {
         event: "unknownCommand",
         message: "Unknown command: \(request.cmd)"
       )
+    }
+  }
+
+  public static func handle(_ request: DaemonRequest, transport: any BluetoothTransport) async -> DaemonResponse {
+    switch request.cmd {
+    case "scan":
+      do {
+        let candidates = try await transport.scan(
+          options: BluetoothDiscoveryOptions(
+            timeoutMs: request.timeoutMs ?? 15_000,
+            namePrefixes: request.namePrefixes ?? [],
+            serviceUUIDs: request.serviceUuids ?? [],
+            minRSSI: request.minRssi
+          )
+        )
+
+        return DaemonResponse(
+          id: request.id,
+          ok: true,
+          event: "scanResult",
+          candidates: candidates,
+          backend: transport.name
+        )
+      } catch {
+        return errorResponse(request, event: "scanFailed", error: error, backend: transport.name)
+      }
+
+    case "write":
+      guard let device = request.device, !device.isEmpty else {
+        return missingValue(request, "device")
+      }
+
+      let frameStrings = request.frames ?? request.frame.map { [$0] } ?? []
+
+      guard !frameStrings.isEmpty else {
+        return missingValue(request, "frame or frames")
+      }
+
+      do {
+        let frameBytes = try frameStrings.map { try MagicLanternCommands.bytes(fromHex: $0) }
+        try await transport.write(
+          options: BluetoothWriteOptions(
+            device: device,
+            serviceUUID: request.serviceUuid ?? MagicLanternCommands.defaultServiceUUID,
+            characteristicUUID: request.characteristicUuid ?? MagicLanternCommands.defaultCharacteristicUUID,
+            frames: frameBytes,
+            writeWithoutResponse: request.writeWithoutResponse ?? true
+          )
+        )
+
+        return DaemonResponse(
+          id: request.id,
+          ok: true,
+          event: "writeComplete",
+          backend: transport.name
+        )
+      } catch {
+        return errorResponse(request, event: "writeFailed", error: error, backend: transport.name)
+      }
+
+    default:
+      return handle(request)
     }
   }
 
@@ -177,6 +268,21 @@ public enum DaemonCommandHandler {
       ok: false,
       event: "invalidRequest",
       message: "Missing required field: \(name)"
+    )
+  }
+
+  private static func errorResponse(
+    _ request: DaemonRequest,
+    event: String,
+    error: Error,
+    backend: String
+  ) -> DaemonResponse {
+    DaemonResponse(
+      id: request.id,
+      ok: false,
+      event: event,
+      message: String(describing: error),
+      backend: backend
     )
   }
 }
