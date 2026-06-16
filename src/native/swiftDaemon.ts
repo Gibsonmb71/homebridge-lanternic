@@ -1,4 +1,5 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -42,9 +43,14 @@ interface PendingRequest {
 }
 
 const moduleDirectory = dirname(fileURLToPath(import.meta.url));
-const repositoryRootFromDist = resolve(moduleDirectory, '../../..');
+const repositoryRootCandidates = [
+  resolve(moduleDirectory, '../..'),
+  resolve(moduleDirectory, '../../..'),
+];
+const repositoryRoot = repositoryRootCandidates.find(candidate => existsSync(resolve(candidate, 'package.json')))
+  ?? repositoryRootCandidates[1];
 
-export const defaultSwiftPackagePath = resolve(repositoryRootFromDist, 'swift/LanternICDaemon');
+export const defaultSwiftPackagePath = resolve(repositoryRoot, 'swift/LanternICDaemon');
 
 export class SwiftDaemonClient {
   private process?: ChildProcessWithoutNullStreams;
@@ -52,6 +58,7 @@ export class SwiftDaemonClient {
   private stderrBuffer = '';
   private nextRequestId = 1;
   private readonly pending = new Map<string, PendingRequest>();
+  private handleOutOfBandResponse: ((response: SwiftDaemonResponse) => boolean) | undefined;
 
   constructor(private readonly options: SwiftDaemonClientOptions = {}) {}
 
@@ -95,11 +102,16 @@ export class SwiftDaemonClient {
       this.process = undefined;
     });
 
-    await withTimeout(
-      this.waitForReady(),
-      this.options.startupTimeoutMs ?? 30_000,
-      `Timed out waiting for Swift daemon to start${this.stderrBuffer ? `: ${this.stderrBuffer}` : ''}`,
-    );
+    try {
+      await withTimeout(
+        this.waitForReady(),
+        this.options.startupTimeoutMs ?? 30_000,
+        `Timed out waiting for Swift daemon to start${this.stderrBuffer ? `: ${this.stderrBuffer}` : ''}`,
+      );
+    } catch (error) {
+      await this.stop();
+      throw error;
+    }
   }
 
   async request(request: Omit<SwiftDaemonRequest, 'id'> & { id?: string }): Promise<SwiftDaemonResponse> {
@@ -118,11 +130,15 @@ export class SwiftDaemonClient {
 
     this.process.stdin.write(`${JSON.stringify(payload)}\n`);
 
-    return withTimeout(
-      responsePromise,
-      this.options.requestTimeoutMs ?? 10_000,
-      `Timed out waiting for Swift daemon response to ${payload.cmd}`,
-    );
+    try {
+      return await withTimeout(
+        responsePromise,
+        this.options.requestTimeoutMs ?? 10_000,
+        `Timed out waiting for Swift daemon response to ${payload.cmd}`,
+      );
+    } finally {
+      this.pending.delete(id);
+    }
   }
 
   async stop(): Promise<void> {
@@ -146,7 +162,7 @@ export class SwiftDaemonClient {
         reject,
       });
 
-      const checkReady = (response: SwiftDaemonResponse): boolean => {
+      this.handleOutOfBandResponse = (response: SwiftDaemonResponse): boolean => {
         if (response.event !== 'ready') {
           return false;
         }
@@ -156,12 +172,8 @@ export class SwiftDaemonClient {
         pending?.resolve(response);
         return true;
       };
-
-      this.handleOutOfBandResponse = checkReady;
     });
   }
-
-  private handleOutOfBandResponse: ((response: SwiftDaemonResponse) => boolean) | undefined;
 
   private handleStdout(chunk: string): void {
     this.stdoutBuffer += chunk;
