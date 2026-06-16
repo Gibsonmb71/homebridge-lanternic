@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 const testRoot = '.test-dist';
 
-const findTestFiles = async directory => {
+const findTestFiles = async (directory: string): Promise<string[]> => {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
 

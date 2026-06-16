@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "exclude": [
-    "src/**/*.test.ts"
+    "**/*.test.ts",
+    "tools/calibrator",
+    "tools/fake-strip.ts"
   ]
 }

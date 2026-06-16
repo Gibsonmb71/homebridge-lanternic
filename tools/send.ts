@@ -19,14 +19,15 @@ if (!address || !command) {
   process.exit(2);
 }
 
-const cleanId = input => String(input ?? '').replace(/[^0-9a-f]/gi, '').toLowerCase();
-const peripheralId = peripheral => peripheral.address || peripheral.uuid || peripheral.id;
+const cleanId = (input: any) => String(input ?? '').replace(/[^0-9a-f]/gi, '').toLowerCase();
+const peripheralId = (peripheral: any) => peripheral.address || peripheral.uuid || peripheral.id;
 const targetId = cleanId(address);
-const noble = withBindings(binding);
+const noble = withBindings((process.env.LANTERNIC_BINDING as any) ?? 'default');
 
-const byte = number => Math.max(0, Math.min(255, Math.round(number)));
-const percent = number => Math.max(0, Math.min(100, Math.round(number)));
-const frame = (...bytes) => Buffer.from(bytes.map(byte));
+const byte = (number: any) => Math.max(0, Math.min(255, Math.round(Number(number) || 0)));
+const percent = (number: any) => Math.max(0, Math.min(100, Math.round(Number(number) || 0)));
+const frame = (...bytes: any[]) => Buffer.from(bytes.map(byte));
+
 
 const buildPayload = () => {
   if (command === 'on') {
@@ -62,13 +63,13 @@ console.log(`Sending ${payload.toString('hex')} to ${address} with binding=${bin
 await noble.waitForPoweredOnAsync(15_000);
 await noble.startScanningAsync([], true);
 
-const peripheral = await new Promise((resolve, reject) => {
+const peripheral = await new Promise<any>((resolve, reject) => {
   const timeout = setTimeout(() => {
     noble.removeListener('discover', onDiscover);
     reject(new Error(`Timed out scanning for ${address}`));
   }, 20_000);
 
-  const onDiscover = candidate => {
+  const onDiscover = (candidate: any) => {
     const ids = [candidate.id, candidate.uuid, candidate.address, peripheralId(candidate)].map(cleanId);
     if (!ids.includes(targetId)) {
       return;

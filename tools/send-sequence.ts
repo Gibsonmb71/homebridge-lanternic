@@ -14,11 +14,11 @@ if (!address || frames.length === 0) {
   process.exit(2);
 }
 
-const cleanId = input => String(input ?? '').replace(/[^0-9a-f]/gi, '').toLowerCase();
-const peripheralId = peripheral => peripheral.address || peripheral.uuid || peripheral.id;
-const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+const cleanId = (input: any) => String(input ?? '').replace(/[^0-9a-f]/gi, '').toLowerCase();
+const peripheralId = (peripheral: any) => peripheral.address || peripheral.uuid || peripheral.id;
+const delay = (milliseconds: any) => new Promise(resolve => setTimeout(resolve, milliseconds));
 const targetId = cleanId(address);
-const noble = withBindings(binding);
+const noble = withBindings((process.env.LANTERNIC_BINDING as any) ?? 'default');
 const payloads = frames.map(frame => Buffer.from(cleanId(frame), 'hex'));
 
 console.log(`Sending ${payloads.length} frame(s) to ${address} with binding=${binding}`);
@@ -26,13 +26,13 @@ console.log(`Sending ${payloads.length} frame(s) to ${address} with binding=${bi
 await noble.waitForPoweredOnAsync(15_000);
 await noble.startScanningAsync([], true);
 
-const peripheral = await new Promise((resolve, reject) => {
+const peripheral = await new Promise<any>((resolve, reject) => {
   const timeout = setTimeout(() => {
     noble.removeListener('discover', onDiscover);
     reject(new Error(`Timed out scanning for ${address}`));
   }, 20_000);
 
-  const onDiscover = candidate => {
+  const onDiscover = (candidate: any) => {
     const ids = [candidate.id, candidate.uuid, candidate.address, peripheralId(candidate)].map(cleanId);
     if (!ids.includes(targetId)) {
       return;
@@ -66,7 +66,7 @@ try {
   for (const payload of payloads) {
     console.log(`WRITE ${payload.toString('hex')} withoutResponse=${withoutResponse}`);
     await characteristic.writeAsync(payload, withoutResponse);
-    await wait(delayMs);
+    await delay(delayMs);
   }
 
   console.log('Sequence complete');

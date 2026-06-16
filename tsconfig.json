@@ -4,7 +4,7 @@
     "lib": [
       "ES2022"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "strict": true,
@@ -17,7 +17,12 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "eslint.config.js",
-    "src"
+    "eslint.config.ts",
+    "src",
+    "tools",
+    "scripts"
+  ],
+  "exclude": [
+    "tools/calibrator"
   ]
 }

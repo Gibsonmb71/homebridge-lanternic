@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { withBindings } from '@stoprocent/noble';
 
-const binding = process.env.LANTERNIC_BINDING ?? 'default';
+const noble = withBindings((process.env.LANTERNIC_BINDING as any) ?? 'default');
 const address = process.argv[2];
 
 if (!address) {
@@ -10,23 +10,22 @@ if (!address) {
   process.exit(2);
 }
 
-const cleanId = input => String(input ?? '').replace(/[^0-9a-f]/gi, '').toLowerCase();
-const peripheralId = peripheral => peripheral.address || peripheral.uuid || peripheral.id;
+const cleanId = (input: any) => String(input ?? '').replace(/[^0-9a-f]/gi, '').toLowerCase();
+const peripheralId = (peripheral: any) => peripheral.address || peripheral.uuid || peripheral.id;
 const targetId = cleanId(address);
-const noble = withBindings(binding);
 
-console.log(`Exploring ${address} with binding=${binding}`);
+console.log(`Exploring ${address} with binding=${process.env.LANTERNIC_BINDING ?? 'default'}`);
 
 await noble.waitForPoweredOnAsync(15_000);
 await noble.startScanningAsync([], true);
 
-const peripheral = await new Promise((resolve, reject) => {
+const peripheral = await new Promise<any>((resolve, reject) => {
   const timeout = setTimeout(() => {
     noble.removeListener('discover', onDiscover);
     reject(new Error(`Timed out scanning for ${address}`));
   }, 20_000);
 
-  const onDiscover = candidate => {
+  const onDiscover = (candidate: any) => {
     const ids = [candidate.id, candidate.uuid, candidate.address, peripheralId(candidate)].map(cleanId);
     if (!ids.includes(targetId)) {
       return;
