@@ -13,6 +13,7 @@ export default tseslint.config(
       'dist',
       '.test-dist',
       'coverage',
+      'tools/calibrator',
     ],
   },
   {
@@ -31,21 +32,16 @@ export default tseslint.config(
   },
   {
     files: [
-      '**/*.mjs',
+      'tools/**/*.ts',
+      'scripts/**/*.ts',
     ],
-    languageOptions: {
-      globals: {
-        Buffer: 'readonly',
-        clearTimeout: 'readonly',
-        console: 'readonly',
-        process: 'readonly',
-        setTimeout: 'readonly',
-      },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {
     files: [
-      'tools/calibrator/**/*.js',
+      'tools/calibrator/**/*.ts',
     ],
     languageOptions: {
       globals: {

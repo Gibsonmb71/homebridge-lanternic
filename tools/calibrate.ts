@@ -11,7 +11,7 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 const staticRoot = join(root, 'calibrator');
 const profilePath = join(process.cwd(), '.lanternic-calibration.json');
 
-const binding = process.env.LANTERNIC_BINDING ?? 'default';
+const binding = (process.env.LANTERNIC_BINDING as any) ?? 'default';
 const port = Number(process.env.LANTERNIC_CALIBRATE_PORT ?? '4287');
 const serviceUuid = cleanHex(process.env.LANTERNIC_SERVICE_UUID ?? 'fff0');
 const characteristicUuid = cleanHex(process.env.LANTERNIC_CHARACTERISTIC_UUID ?? 'fff3');
@@ -21,19 +21,19 @@ const noble = withBindings(binding);
 
 let targetAddress = defaultAddress;
 let queue = Promise.resolve();
-let peripheral;
-let characteristic;
-let idleTimer;
+let peripheral: any;
+let characteristic: any;
+let idleTimer: any;
 
-function cleanHex(input) {
+function cleanHex(input: any) {
   return String(input ?? '').replace(/[^0-9a-f]/gi, '').toLowerCase();
 }
 
-function peripheralId(candidate) {
+function peripheralId(candidate: any) {
   return candidate.address || candidate.uuid || candidate.id;
 }
 
-function clampByte(value) {
+function clampByte(value: any) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) {
     return 0;
@@ -41,7 +41,7 @@ function clampByte(value) {
   return Math.max(0, Math.min(255, Math.round(numeric)));
 }
 
-function colorFrame({ red, green, blue }) {
+function colorFrame({ red, green, blue }: any) {
   return Buffer.from([
     0x7e,
     0x07,
@@ -55,17 +55,17 @@ function colorFrame({ red, green, blue }) {
   ]);
 }
 
-function powerFrame(on) {
+function powerFrame(on: any) {
   return on
     ? Buffer.from('7e0404f00001ff00ef', 'hex')
     : Buffer.from('7e0404000000ff00ef', 'hex');
 }
 
-function delay(milliseconds) {
+function delay(milliseconds: any) {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
-function json(response, status, body) {
+function json(response: any, status: any, body: any) {
   const data = JSON.stringify(body);
   response.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
@@ -74,7 +74,7 @@ function json(response, status, body) {
   response.end(data);
 }
 
-async function requestJson(request) {
+async function requestJson(request: any) {
   const chunks = [];
   for await (const chunk of request) {
     chunks.push(chunk);
@@ -83,7 +83,7 @@ async function requestJson(request) {
   return body ? JSON.parse(body) : {};
 }
 
-function runExclusive(operation) {
+function runExclusive(operation: any) {
   const run = queue.then(operation, operation);
   queue = run.then(
     () => undefined,
@@ -101,13 +101,13 @@ async function ensureConnected() {
   await noble.startScanningAsync([], true);
 
   const targetId = cleanHex(targetAddress);
-  const found = await new Promise((resolve, reject) => {
+  const found = await new Promise<any>((resolve, reject) => {
     const timeout = setTimeout(() => {
       noble.removeListener('discover', onDiscover);
       reject(new Error(`Timed out scanning for ${targetAddress}`));
     }, 20_000);
 
-    const onDiscover = candidate => {
+    const onDiscover = (candidate: any) => {
       const ids = [candidate.id, candidate.uuid, candidate.address, peripheralId(candidate)].map(cleanHex);
       if (!ids.includes(targetId)) {
         return;
@@ -160,7 +160,7 @@ async function disconnectSoon() {
   }, 15_000);
 }
 
-async function writeFrames(frames) {
+async function writeFrames(frames: any[]) {
   return runExclusive(async () => {
     await ensureConnected();
     const withoutResponse = !characteristic.properties.includes('write')
@@ -172,11 +172,11 @@ async function writeFrames(frames) {
     }
 
     await disconnectSoon();
-    return frames.map(frame => frame.toString('hex'));
+    return frames.map((frame: any) => frame.toString('hex'));
   });
 }
 
-async function serveStatic(request, response) {
+async function serveStatic(request: any, response: any) {
   const url = new URL(request.url, 'http://localhost');
   const relative = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1));
   const filePath = normalize(join(staticRoot, relative));
@@ -187,7 +187,7 @@ async function serveStatic(request, response) {
     return;
   }
 
-  const types = {
+  const types: any = {
     '.css': 'text/css; charset=utf-8',
     '.html': 'text/html; charset=utf-8',
     '.js': 'text/javascript; charset=utf-8',
@@ -199,7 +199,7 @@ async function serveStatic(request, response) {
   createReadStream(filePath).pipe(response);
 }
 
-async function handleApi(request, response) {
+async function handleApi(request: any, response: any) {
   try {
     if (request.method === 'GET' && request.url === '/api/status') {
       let savedProfile = null;

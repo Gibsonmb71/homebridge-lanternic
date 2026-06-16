@@ -7,13 +7,13 @@ const serviceUuid = 'fff0';
 const writeCharacteristicUuid = 'fff3';
 const notifyCharacteristicUuid = 'fff4';
 
-const bleno = withBindings(binding);
+const bleno = withBindings((process.env.LANTERNIC_BINDING as any) ?? 'default');
 const Characteristic = bleno.Characteristic;
 const PrimaryService = bleno.PrimaryService;
 
 const callbacks = new Map();
 
-const parseWriteArgs = args => {
+const parseWriteArgs = (args: any[]) => {
   if (args.length >= 5) {
     const [handle, data, offset, withoutResponse, callback] = args;
     return { handle, data, offset, withoutResponse, callback };
@@ -26,14 +26,14 @@ const parseWriteArgs = args => {
 const writeCharacteristic = new Characteristic({
   uuid: writeCharacteristicUuid,
   properties: ['read', 'writeWithoutResponse'],
-  onReadRequest: (...args) => {
-    const callback = args.at(-1);
+  onReadRequest: (...args: any[]) => {
+    const callback = args.at(-1) as any;
     const offset = args.length >= 3 ? args.at(-2) : args.at(0);
     const data = offset ? firmware.subarray(offset) : firmware;
     console.log(`READ ${writeCharacteristicUuid} offset=${offset ?? 0} -> ${data.toString('hex')} (${data.toString('utf8')})`);
     callback(Characteristic.RESULT_SUCCESS, data);
   },
-  onWriteRequest: (...args) => {
+  onWriteRequest: (...args: any[]) => {
     const { handle, data, offset, withoutResponse, callback } = parseWriteArgs(args);
     console.log(`WRITE ${writeCharacteristicUuid} handle=${handle} offset=${offset} withoutResponse=${withoutResponse} hex=${data.toString('hex')}`);
 
@@ -49,14 +49,14 @@ const writeCharacteristic = new Characteristic({
 const notifyCharacteristic = new Characteristic({
   uuid: notifyCharacteristicUuid,
   properties: ['notify'],
-  onSubscribe: (...args) => {
+  onSubscribe: (...args: any[]) => {
     const [handle, maxValueSize, updateValueCallback] = args.length >= 3
       ? args
       : ['legacy', args[0], args[1]];
     callbacks.set(handle, updateValueCallback);
     console.log(`SUBSCRIBE ${notifyCharacteristicUuid} handle=${handle} maxValueSize=${maxValueSize}`);
   },
-  onUnsubscribe: (...args) => {
+  onUnsubscribe: (...args: any[]) => {
     const handle = args[0] ?? 'legacy';
     callbacks.delete(handle);
     console.log(`UNSUBSCRIBE ${notifyCharacteristicUuid} handle=${handle}`);
@@ -71,19 +71,19 @@ const service = new PrimaryService({
   ],
 });
 
-bleno.on('stateChange', state => {
+bleno.on('stateChange', (state: any) => {
   console.log(`stateChange ${state}`);
 });
 
-bleno.on('advertisingStart', error => {
+bleno.on('advertisingStart', (error: any) => {
   console.log(error ? `advertisingStart error=${error.message}` : `advertisingStart name=${name}`);
 });
 
-bleno.on('accept', (address, handle) => {
+bleno.on('accept', (address: any, handle: any) => {
   console.log(`ACCEPT address=${address} handle=${handle}`);
 });
 
-bleno.on('disconnect', (address, handle) => {
+bleno.on('disconnect', (address: any, handle: any) => {
   callbacks.delete(handle);
   console.log(`DISCONNECT address=${address} handle=${handle}`);
 });

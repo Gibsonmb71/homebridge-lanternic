@@ -9,7 +9,7 @@ const repoRoot = process.cwd();
 const homebridgeVersion = process.env.HOMEBRIDGE_VERSION ?? '2.0.0';
 const keepTemp = process.env.LANTERNIC_KEEP_SMOKE_DIR === '1';
 
-const run = (command, args, options = {}) => {
+const run = (command: string, args: string[], options: any = {}) => {
   const result = spawnSync(command, args, {
     cwd: options.cwd ?? repoRoot,
     encoding: 'utf8',
@@ -27,19 +27,19 @@ const run = (command, args, options = {}) => {
   return result.stdout;
 };
 
-const assertFile = path => {
+const assertFile = (path: string) => {
   if (!existsSync(path)) {
     throw new Error(`Expected file to exist: ${path}`);
   }
 };
 
-const assertMissing = path => {
+const assertMissing = (path: string) => {
   if (existsSync(path)) {
     throw new Error(`Expected file to be excluded: ${path}`);
   }
 };
 
-const assertExecutable = path => {
+const assertExecutable = (path: string) => {
   assertFile(path);
 
   if ((statSync(path).mode & 0o111) === 0) {
@@ -47,7 +47,7 @@ const assertExecutable = path => {
   }
 };
 
-const writeHomebridgeConfig = async (hbDir, bridgePort) => {
+const writeHomebridgeConfig = async (hbDir: string, bridgePort: number) => {
   await writeFile(join(hbDir, 'config.json'), `${JSON.stringify({
     bridge: {
       name: 'LanternIC Smoke',
@@ -68,7 +68,7 @@ const writeHomebridgeConfig = async (hbDir, bridgePort) => {
   }, null, 2)}\n`);
 };
 
-const runHomebridge = async (installDir, hbDir, bridgePort) => {
+const runHomebridge = async (installDir: string, hbDir: string, bridgePort: number) => {
   const homebridgeBin = join(installDir, 'node_modules', 'homebridge', 'bin', 'homebridge');
   const pluginPath = join(installDir, 'node_modules');
   const child = spawn(process.execPath, [
@@ -88,7 +88,7 @@ const runHomebridge = async (installDir, hbDir, bridgePort) => {
   let sawRegistered = false;
   let sawRunning = false;
 
-  const append = chunk => {
+  const append = (chunk: any) => {
     output += chunk.toString('utf8');
     sawLoaded ||= output.includes('Loaded plugin: homebridge-lanternic@');
     sawRegistered ||= output.includes("Registering platform 'homebridge-lanternic.LanternIC'");
@@ -102,7 +102,7 @@ const runHomebridge = async (installDir, hbDir, bridgePort) => {
   child.stdout.on('data', append);
   child.stderr.on('data', append);
 
-  await new Promise((resolvePromise, reject) => {
+  await new Promise<void>((resolvePromise, reject) => {
     const timer = setTimeout(() => {
       child.kill('SIGINT');
       reject(new Error(`Timed out waiting for Homebridge smoke test:\n${output}`));
@@ -150,11 +150,11 @@ try {
   run('npm', ['install', tarballPath, `homebridge@${homebridgeVersion}`, '--omit=dev'], { cwd: installDir });
 
   const pluginRoot = join(installDir, 'node_modules', 'homebridge-lanternic');
-  assertFile(join(pluginRoot, 'dist', 'index.js'));
+  assertFile(join(pluginRoot, 'dist', 'src', 'index.js'));
   assertFile(join(pluginRoot, 'config.schema.json'));
-  assertExecutable(join(pluginRoot, 'tools', 'scan.mjs'));
+  assertExecutable(join(pluginRoot, 'dist', 'tools', 'scan.js'));
   assertFile(join(installDir, 'node_modules', '.bin', 'lanternic-scan'));
-  assertMissing(join(pluginRoot, 'tools', 'fake-strip.mjs'));
+  assertMissing(join(pluginRoot, 'dist', 'tools', 'fake-strip.js'));
 
   run(process.execPath, ['-e', "import('homebridge-lanternic').then(m => { if (typeof m.default !== 'function') throw new Error('default export is not a function'); })"], {
     cwd: installDir,

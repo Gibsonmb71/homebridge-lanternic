@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { withBindings } from '@stoprocent/noble';
 
-const cleanId = value => String(value ?? '').replace(/[^0-9a-f]/gi, '').toLowerCase();
-const binding = process.env.LANTERNIC_BINDING ?? 'default';
+const cleanId = (value: any) => String(value ?? '').replace(/[^0-9a-f]/gi, '').toLowerCase();
+const binding = (process.env.LANTERNIC_BINDING as any) ?? 'default';
 const seconds = Number(process.env.LANTERNIC_SCAN_SECONDS ?? '20');
 const showAll = process.env.LANTERNIC_SCAN_ALL === '1';
 const minRssi = process.env.LANTERNIC_MIN_RSSI === undefined
@@ -20,16 +20,16 @@ const serviceUuids = (process.env.LANTERNIC_SERVICE_UUIDS ?? 'fff0')
 const noble = withBindings(binding);
 const seen = new Map();
 
-const peripheralId = peripheral => peripheral.address || peripheral.uuid || peripheral.id;
-const formatAddress = value => {
+const peripheralId = (peripheral: any) => peripheral.address || peripheral.uuid || peripheral.id;
+const formatAddress = (value: any) => {
   const normalized = cleanId(value);
   if (normalized.length !== 12) {
     return value;
   }
-  return normalized.match(/.{1,2}/g).join(':');
+  return normalized.match(/.{1,2}/g)!.join(':');
 };
 
-const matches = peripheral => {
+const matches = (peripheral: any) => {
   if (showAll) {
     return true;
   }
@@ -50,7 +50,7 @@ console.log('If macOS asks for Bluetooth access, approve it for the app running 
 
 await noble.waitForPoweredOnAsync(15_000);
 
-noble.on('discover', peripheral => {
+noble.on('discover', async (peripheral: any) => {
   if (!matches(peripheral)) {
     return;
   }

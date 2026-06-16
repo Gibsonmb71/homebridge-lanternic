@@ -6,3 +6,4 @@ coverage
 .lanternic-calibration.json
 .DS_Store
 *.log
+tools/calibrator/app.js

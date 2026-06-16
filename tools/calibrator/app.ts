@@ -1,3 +1,4 @@
+// @ts-nocheck
 const state = {
   targetAddress: '',
   requested: { red: 255, green: 0, blue: 0 },
